@@ -1,6 +1,6 @@
 # Apify-Haystack integration
 
-TODO: The Apify-Haystack integration allows to quickly fetch results from Apify Actors
+Apify-Haystack integration allows to quickly fetch results from Apify Actors.
 
 ## Installation
 

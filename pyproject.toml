@@ -3,13 +3,13 @@ requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
-name = "apify-haystack"
+name = "apify_haystack"
 version = "0.0.1"
 description = "Apify-haystack integration"
 authors = ["Apify Technologies s.r.o. <support@apify.com>"]
 license = "Apache-2.0"
 readme = "README.md"
-packages = [{ include = "apify-haystack", from = "src" }]
+packages = [{ include = "apify_haystack", from = "src" }]
 classifiers = [
     "Development Status :: 3 - Alpha",
     "Intended Audience :: Developers",
@@ -24,7 +24,7 @@ keywords = [
     "apify",
     "crawler",
     "haystack",
-    "rag"
+    "rag",
     "scraper",
     "scraping",
 ]
