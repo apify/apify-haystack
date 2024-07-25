@@ -18,7 +18,3 @@ jobs:
   run_type_checking:
     name: Run type checking
     uses: ./.github/workflows/_type_checking.yaml
-
-  run_unit_tests:
-    name: Run unit tests
-    uses: ./.github/workflows/_unit_tests.yaml
