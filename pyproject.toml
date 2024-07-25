@@ -15,6 +15,7 @@ classifiers = [
     "Intended Audience :: Developers",
     "License :: OSI Approved :: Apache Software License",
     "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
@@ -30,18 +31,18 @@ keywords = [
 ]
 
 [tool.poetry.urls]
-"Homepage" = "https://crawlee.dev/python"
+"Homepage" = "https://apify.com"
 "Apify Homepage" = "https://apify.com"
-"Changelog" = "https://github.com/apify/crawlee-py/blob/master/CHANGELOG.md"
-"Documentation" = "https://crawlee.dev/python/docs/quick-start"
-"Issue Tracker" = "https://github.com/apify/crawlee-py/issues"
-"Repository" = "https://github.com/apify/crawlee-py"
+"Changelog" = "https://github.com/apify/apify-haystack/blob/master/CHANGELOG.md"
+"Documentation" = ""
+"Issue Tracker" = "https://github.com/apify/apify-haystack/issues"
+"Repository" = "https://github.com/apify/apify-haystack"
 
 # We use inclusive ordered comparison clauses for external packages intentionally in order to enhance Crawlee's
 # compatibility with external packages. This decision was discussed in detail in the following PR:
 # https://github.com/apify/apify-sdk-python/pull/154.
 [tool.poetry.dependencies]
-python = "^3.10"
+python = "^3.9"
 
 [tool.poetry.group.dev.dependencies]
 build = "~1.2.0"
@@ -125,7 +126,7 @@ max-branches = 18
 
 [tool.mypy]
 python_version = "3.9"
-plugins = ["pydantic.mypy"]
+plugins = []
 files = ["scripts", "src", "tests"]
 check_untyped_defs = true
 disallow_incomplete_defs = true
