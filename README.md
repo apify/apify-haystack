@@ -2,6 +2,10 @@
 
 Apify-Haystack integration allows to quickly fetch results from Apify Actors.
 
+🚧 **Work In Progress** 🚧
+
+This project is currently under active development.
+
 ## Installation
 
 Apify-haystack is available as the [`apify-haystack`](https://pypi.org/project/apify-haystack/) PyPI package.
