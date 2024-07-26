@@ -43,6 +43,9 @@ keywords = [
 # https://github.com/apify/apify-sdk-python/pull/154.
 [tool.poetry.dependencies]
 python = "^3.9"
+apify-client = "^1.7.1"
+haystack-ai = "^2.3.0"
+python-dotenv = "^1.0.1"
 
 [tool.poetry.group.dev.dependencies]
 build = "~1.2.0"
