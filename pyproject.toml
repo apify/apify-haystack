@@ -32,9 +32,8 @@ keywords = [
 
 [tool.poetry.urls]
 "Homepage" = "https://apify.com"
-"Apify Homepage" = "https://apify.com"
 "Changelog" = "https://github.com/apify/apify-haystack/blob/master/CHANGELOG.md"
-"Documentation" = ""
+"Documentation" = "https://github.com/apify/apify-haystack"
 "Issue Tracker" = "https://github.com/apify/apify-haystack/issues"
 "Repository" = "https://github.com/apify/apify-haystack"
 
