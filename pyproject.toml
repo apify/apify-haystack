@@ -7,6 +7,7 @@ name = "apify_haystack"
 version = "0.0.1"
 description = "Apify-haystack integration"
 authors = ["Apify Technologies s.r.o. <support@apify.com>"]
+homepage = "https://apify.com"
 license = "Apache-2.0"
 readme = "README.md"
 packages = [{ include = "apify_haystack", from = "src" }]
