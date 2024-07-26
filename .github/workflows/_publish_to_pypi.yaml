@@ -51,6 +51,8 @@ jobs:
       # Publishes the package to PyPI using PyPA official GitHub action with OIDC authentication.
       - name: Publish package to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          verbose: true
 
       # If this workflow is not triggered by a GitHub release event, manually create and push a Git tag.
       - name: Create Git tag with the published version
