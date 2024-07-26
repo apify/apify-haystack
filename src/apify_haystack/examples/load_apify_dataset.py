@@ -17,7 +17,7 @@ from apify_haystack import ApifyDatasetLoader
 dataset_id = "YOUR-DATASET-ID"
 
 
-def dataset_mapping_function(dataset_item):
+def dataset_mapping_function(dataset_item: dict) -> Document:
     return Document(content=dataset_item.get("text"), meta={"url": dataset_item.get("url")})
 
 
