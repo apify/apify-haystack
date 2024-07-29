@@ -51,17 +51,14 @@ class ApifyDatasetLoader:
         if httpx_client := getattr(self.client.http_client, "httpx_client", None):
             httpx_client.headers["user-agent"] += f"; {HAYSTACK_ATTRIBUTE_USER_AGENT}"
 
-    @component.output_types(documents=list[Document])  # type: ignore[misc]
-    def run(
-        self,
-    ) -> list[Document]:
-        """Load datasets produced by the `Apify Actors`."""
+    @component.output_types(documents=list[Document])
+    def run(self):  # type: ignore[no-untyped-def]
+        """Load datasets produced by the `Apify Actors`.
+
+        Type-hint note: the output is not type-hinted, otherwise linting complains that `run` method is a component
+        """
         dataset_items = self.client.dataset(self.dataset_id).list_items(clean=True).items
-        return list(map(self.dataset_mapping_function, dataset_items))
-
-
-# @component
-# class ApifyKeyValueStoreLoader:
+        return {"documents": list(map(self.dataset_mapping_function, dataset_items))}
 
 
 class ApifyDatasetFromActorCall:
@@ -120,9 +117,12 @@ class ApifyDatasetFromActorCall:
         if httpx_client := getattr(self.client.http_client, "httpx_client", None):
             httpx_client.headers["user-agent"] += f"; {HAYSTACK_ATTRIBUTE_USER_AGENT}"
 
-    @component.output_types(documents=list[Document])  # type: ignore[misc]
-    def run(self) -> list[Document]:
-        """Run an Actor on the Apify platform and wait for results to be ready."""
+    @component.output_types(documents=list[Document])
+    def run(self):  # type: ignore[no-untyped-def]
+        """Run an Actor on the Apify platform and wait for results to be ready.
+
+        Type-hint note: the output is not type-hinted, otherwise linting complains that `run` method is a component
+        """
         if not (
             actor_call := self.client.actor(self.actor_id).call(
                 run_input=self.run_input,

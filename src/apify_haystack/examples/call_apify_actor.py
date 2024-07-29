@@ -1,4 +1,4 @@
-"""Call Apify Actor and Load a dataset
+"""Call Apify Actor and load a dataset to convert it to Haystack Documents.
 
 Let's say that you want to crawl and get text  content from you https://docs.haystack.deepset.ai/
 You can call Apify's Website Content Crawler and get the scraped data in a dataset.
