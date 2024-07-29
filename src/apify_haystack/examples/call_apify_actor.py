@@ -21,7 +21,7 @@ apify_token = "" or load_dotenv()
 actor_id = "apify/website-content-crawler"
 run_input = {
     "maxCrawlPages": 3,  # limit the number of pages to crawl
-    "startUrls": [{"url": "https://docs.haystack.deepset.ai/"}],
+    "startUrls": [{"url": "https://haystack.deepset.ai/"}],
 }
 
 
@@ -32,8 +32,8 @@ def dataset_mapping_function(dataset_item: dict) -> Document:
 actor = ApifyDatasetFromActorCall(
     actor_id=actor_id, run_input=run_input, dataset_mapping_function=dataset_mapping_function
 )
-print(f"Calling Apify actor {actor_id} ... crawling will take some time.")
-dataset = actor.run()
+print(f"Calling Apify actor {actor_id} ... crawling will take some time ...")
+dataset = actor.run().get("documents")
 
 print(f"Loaded {len(dataset)} documents from the Apify Actor {actor_id}:")
 for d in dataset:
