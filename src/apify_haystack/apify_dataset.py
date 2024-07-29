@@ -63,6 +63,7 @@ class ApifyDatasetLoader:
 # @component
 # class ApifyKeyValueStoreLoader:
 
+
 class ApifyDatasetFromActorCall:
     """Get Apify dataset by calling Apify Actor.
 
@@ -135,8 +136,8 @@ class ApifyDatasetFromActorCall:
         if not (dataset_id := actor_call.get("defaultDatasetId")):
             raise ValueError(f"No dataset found in the actor {self.actor_id} call response.")
 
-        loader = ApifyDatasetLoader()
-        return loader.run(
+        loader = ApifyDatasetLoader(
             dataset_id=dataset_id,
             dataset_mapping_function=self.dataset_mapping_function,
-        )  # type: ignore[no-any-return]
+        )
+        return loader.run()
