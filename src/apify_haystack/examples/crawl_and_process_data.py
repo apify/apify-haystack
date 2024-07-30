@@ -31,7 +31,7 @@ from apify_haystack import ApifyDatasetFromActorCall
 load_dotenv()
 
 # Set APIFY-API-TOKEN here or use it from .env file
-apify_token = "" or os.getenv("APIFY_API_TOKEN")
+apify_api_token = "" or os.getenv("APIFY_API_TOKEN")
 openai_api_key = "" or os.getenv("OPENAI_API_KEY")
 
 actor_id = "apify/website-content-crawler"
@@ -46,7 +46,10 @@ def dataset_mapping_function(dataset_item: dict) -> Document:
 
 
 document_loader = ApifyDatasetFromActorCall(
-    actor_id=actor_id, run_input=run_input, dataset_mapping_function=dataset_mapping_function
+    actor_id=actor_id,
+    run_input=run_input,
+    dataset_mapping_function=dataset_mapping_function,
+    apify_api_token=apify_api_token,
 )
 
 document_store = InMemoryDocumentStore()

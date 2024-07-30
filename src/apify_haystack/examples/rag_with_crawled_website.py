@@ -48,7 +48,10 @@ def dataset_mapping_function(dataset_item: dict) -> Document:
 
 
 apify_dataset_loader = ApifyDatasetFromActorCall(
-    actor_id=actor_id, run_input=run_input, dataset_mapping_function=dataset_mapping_function
+    actor_id=actor_id,
+    run_input=run_input,
+    dataset_mapping_function=dataset_mapping_function,
+    apify_api_token=apify_api_token,
 )
 
 # Components

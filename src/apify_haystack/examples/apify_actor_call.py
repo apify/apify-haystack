@@ -19,8 +19,8 @@ from haystack import Document
 
 from apify_haystack import ApifyDatasetFromActorCall
 
-# Sey APIFY-API-TOKEN here or load it from .env file
-apify_token = "" or load_dotenv()
+# Set APIFY-API-TOKEN here or load it from .env file
+apify_api_token = "" or load_dotenv()
 
 actor_id = "apify/website-content-crawler"
 run_input = {
@@ -34,7 +34,10 @@ def dataset_mapping_function(dataset_item: dict) -> Document:
 
 
 actor = ApifyDatasetFromActorCall(
-    actor_id=actor_id, run_input=run_input, dataset_mapping_function=dataset_mapping_function
+    actor_id=actor_id,
+    run_input=run_input,
+    dataset_mapping_function=dataset_mapping_function,
+    apify_api_token=str(apify_api_token),
 )
 print(f"Calling the Apify actor {actor_id} ... crawling will take some time ...")
 print("You can monitor the progress at: https://console.apify.com/actors/runs")
