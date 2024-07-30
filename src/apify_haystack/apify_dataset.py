@@ -52,10 +52,11 @@ class ApifyDatasetLoader:
             httpx_client.headers["user-agent"] += f"; {HAYSTACK_ATTRIBUTE_USER_AGENT}"
 
     @component.output_types(documents=list[Document])
-    def run(self):  # type: ignore[no-untyped-def]
+    def run(self):  # type: ignore[no-untyped-def] # noqa: ANN201
         """Load datasets produced by the `Apify Actors`.
 
-        Type-hint note: the output is not type-hinted, otherwise linting complains that `run` method is a component
+        Type-hint note: the output is not type-hinted, otherwise linting complains
+        that `run` method is not haystack a component
         """
         dataset_items = self.client.dataset(self.dataset_id).list_items(clean=True).items
         return {"documents": list(map(self.dataset_mapping_function, dataset_items))}
@@ -84,8 +85,7 @@ class ApifyDatasetFromActorCall:
         timeout_secs: int | None = None,
         apify_api_token: str | None = None,
     ) -> None:
-        """
-        Initialize the Apify Actor loader.
+        """Initialize the Apify Actor loader.
 
         Args:
             actor_id (str): The ID or name of the Actor on the Apify platform.
@@ -119,10 +119,11 @@ class ApifyDatasetFromActorCall:
             httpx_client.headers["user-agent"] += f"; {HAYSTACK_ATTRIBUTE_USER_AGENT}"
 
     @component.output_types(documents=list[Document])
-    def run(self):  # type: ignore[no-untyped-def]
+    def run(self):  # type: ignore[no-untyped-def] # noqa: ANN201
         """Run an Actor on the Apify platform and wait for results to be ready.
 
-        Type-hint note: the output is not type-hinted, otherwise linting complains that `run` method is a component
+        Type-hint note: the output is not type-hinted, otherwise linting complains
+        that `run` method is not haystack a component
         """
         if not (
             actor_call := self.client.actor(self.actor_id).call(
@@ -155,19 +156,18 @@ class ApifyDatasetFromTaskCall:
         self,
         task_id: str,
         dataset_mapping_function: Callable[[dict], Document],
-        run_input: dict,
+        task_input: dict,
         *,
         build: str | None = None,
         memory_mbytes: int | None = None,
         timeout_secs: int | None = None,
         apify_api_token: str | None = None,
     ) -> None:
-        """
-        Initialize the Apify Actor loader.
+        """Initialize the Apify Actor loader.
 
         Args:
             task_id (str): The ID or name of the Actor on the Apify platform.
-            run_input (Dict): The input object of the Actor that you're trying to run.
+            task_input (Dict): The input object of the Actor that you're trying to run.
             dataset_mapping_function (Callable): A function that takes a single
                 dictionary (an Apify dataset item) and converts it to an
                 instance of the Document class.
@@ -180,7 +180,7 @@ class ApifyDatasetFromTaskCall:
         """
         self.task_id = task_id
         self.dataset_mapping_function = dataset_mapping_function
-        self.run_input = run_input
+        self.task_input = task_input
         self.build = build
         self.memory_mbytes = memory_mbytes
         self.timeout_secs = timeout_secs
@@ -197,14 +197,15 @@ class ApifyDatasetFromTaskCall:
             httpx_client.headers["user-agent"] += f"; {HAYSTACK_ATTRIBUTE_USER_AGENT}"
 
     @component.output_types(documents=list[Document])
-    def run(self):  # type: ignore[no-untyped-def]
+    def run(self):  # type: ignore[no-untyped-def] # noqa: ANN201
         """Run an Actor on the Apify platform and wait for results to be ready.
 
-        Type-hint note: the output is not type-hinted, otherwise linting complains that `run` method is a component
+        Type-hint note: the output is not type-hinted, otherwise linting complains
+        that `run` method is not haystack a component
         """
         if not (
             actor_call := self.client.task(self.task_id).call(
-                run_input=self.run_input,
+                task_input=self.task_input,
                 build=self.build,
                 memory_mbytes=self.memory_mbytes,
                 timeout_secs=self.timeout_secs,

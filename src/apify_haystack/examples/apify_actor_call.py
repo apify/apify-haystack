@@ -1,11 +1,11 @@
 """
 Call Apify Actor and load a dataset to convert it to Haystack Documents.
 
-This script demonstrates how to use Apify's Website Content Crawler to scrape text content from a specified website and convert the
-scraped data into Haystack Documents.
+This script demonstrates how to use Apify's Website Content Crawler to scrape text content from a specified website
+and convert the scraped data into Haystack Documents.
 
-For example, if you want to crawl and get text content from https://haystack.deepset.ai/, you can use this script to call the Apify actor
-and retrieve the data in a structured format.
+For example, if you want to crawl and get text content from https://haystack.deepset.ai/, you can use this script
+to call the Apify actor and retrieve the data in a structured format.
 
 The script should produce the following output (an example of a single Document):
 ......
@@ -17,7 +17,7 @@ Haystack is an open-source framework fo...', meta: {'url': 'https://docs.haystac
 from dotenv import load_dotenv
 from haystack import Document
 
-from apify_dataset import ApifyDatasetFromActorCall
+from apify_haystack import ApifyDatasetFromActorCall
 
 # Sey APIFY-API-TOKEN here or load it from .env file
 apify_token = "" or load_dotenv()

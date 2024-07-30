@@ -365,13 +365,13 @@ files = [
 
 [[package]]
 name = "haystack-ai"
-version = "2.3.0"
+version = "2.3.1"
 description = "LLM framework to build customizable, production-ready LLM applications. Connect components (models, vector DBs, file converters) to pipelines or agents that can interact with your data."
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "haystack_ai-2.3.0-py3-none-any.whl", hash = "sha256:408fd1dbc4a87e1f16228bbf1ad9bac619df5f709912c1d79caca85fc43b58ff"},
-    {file = "haystack_ai-2.3.0.tar.gz", hash = "sha256:9ac2c480ff81d01b275f21ff0a824aa28368ae7f4004c8ffbbb3184bc2b3ab56"},
+    {file = "haystack_ai-2.3.1-py3-none-any.whl", hash = "sha256:578414a2e2bf28d9fb94f743ca6b1a3e70e18dbfca091e3658eaaefaab8c46e5"},
+    {file = "haystack_ai-2.3.1.tar.gz", hash = "sha256:058f61afc7671d4c336ee25dd5ffcc80acffa09ba9c4283a939e971d49b99785"},
 ]
 
 [package.dependencies]
@@ -393,13 +393,13 @@ typing-extensions = ">=4.7"
 
 [[package]]
 name = "haystack-experimental"
-version = "0.1.0"
+version = "0.1.1"
 description = "Experimental components and features for the Haystack LLM framework."
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "haystack_experimental-0.1.0-py3-none-any.whl", hash = "sha256:f1eca864088d38bd3a2f38172930935442e2040725cc22c71894d2a1ea3a655f"},
-    {file = "haystack_experimental-0.1.0.tar.gz", hash = "sha256:70e124f5492efc46ab40da2a47c9aabfb94498c073effc02f974012e9dd3e2ef"},
+    {file = "haystack_experimental-0.1.1-py3-none-any.whl", hash = "sha256:c11fa89c0754dafd3ec25220c02e459d784acda7a9c047e3297e1b11f35ebb06"},
+    {file = "haystack_experimental-0.1.1.tar.gz", hash = "sha256:64cc58d54b9cf9a2957616e4cb44a10c12e36ab640ebe0c38e7cc70300cb6726"},
 ]
 
 [package.dependencies]
@@ -1300,13 +1300,13 @@ files = [
 
 [[package]]
 name = "tenacity"
-version = "8.5.0"
+version = "9.0.0"
 description = "Retry code until it succeeds"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "tenacity-8.5.0-py3-none-any.whl", hash = "sha256:b594c2a5945830c267ce6b79a166228323ed52718f30302c1359836112346687"},
-    {file = "tenacity-8.5.0.tar.gz", hash = "sha256:8bc6c0c8a09b31e6cad13c47afbed1a567518250a9a171418582ed8d9c20ca78"},
+    {file = "tenacity-9.0.0-py3-none-any.whl", hash = "sha256:93de0c98785b27fcf659856aa9f54bfbd399e29969b0621bc7f762bd441b4539"},
+    {file = "tenacity-9.0.0.tar.gz", hash = "sha256:807f37ca97d62aa361264d497b0e31e92b8027044942bfa756160d908320d73b"},
 ]
 
 [package.extras]

@@ -21,7 +21,7 @@ from haystack.components.preprocessors import DocumentCleaner, DocumentSplitter
 from haystack.components.writers import DocumentWriter
 from haystack.document_stores.in_memory import InMemoryDocumentStore
 
-from apify_dataset import ApifyDatasetFromActorCall
+from apify_haystack import ApifyDatasetFromActorCall
 
 # Sey APIFY-API-TOKEN here or load it from .env file
 apify_token = "" or load_dotenv()

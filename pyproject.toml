@@ -149,11 +149,7 @@ warn_unreachable = true
 warn_unused_ignores = true
 
 [[tool.mypy.overrides]]
-module = "haystack"
-ignore_missing_imports = true
-
-[[tool.mypy.overrides]]
-module = "haystack.dataclasses"
+module = "haystack.*"
 ignore_missing_imports = true
 
 [tool.mypy-sortedcollections]

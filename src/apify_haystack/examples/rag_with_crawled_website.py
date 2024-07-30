@@ -29,7 +29,7 @@ from haystack.components.generators import OpenAIGenerator
 from haystack.components.retrievers.in_memory import InMemoryEmbeddingRetriever
 from haystack.document_stores.in_memory import InMemoryDocumentStore
 
-from apify_dataset import ApifyDatasetFromActorCall
+from apify_haystack import ApifyDatasetFromActorCall
 
 # Load OPENAI_API_KEY and APIFY_API_TOKEN from .env file
 load_dotenv()
