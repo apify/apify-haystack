@@ -1,10 +1,11 @@
 # Apify-Haystack integration
 
-Apify-Haystack integration allows to quickly fetch results from Apify Actors.
+The Apify-Haystack integration allows easy interaction between the Apify platform and Haystack.
 
-🚧 **Work In Progress** 🚧
+Apify is a platform for web scraping, data extraction, and web automation tasks.
+It provides serverless applications called Actors for different tasks, like crawling websites, and scraping Facebook, Instagram, and Google results, etc.
 
-This project is currently under active development.
+Haystack offers an ecosystem of tools for building, managing, and deploying search engines and LLM applications.
 
 ## Installation
 
@@ -16,9 +17,10 @@ pip install apify-haystack
 
 ## Examples
 
-Here are some practical examples to help you get started ...
-
-## Features
+- Load a dataset from Apify and convert it to Haystack Documents: [apify_dataset_load.py](src/apify_haystack/examples/apify_dataset_load.py)
+- Call Apify Actor and load a dataset to convert it to Haystack Documents: [apify_actor_call.py](src/apify_haystack/examples/apify_actor_call.py)
+- Crawl website, scrape text content, and store it in the InMemoryDocumentStore: [crawl_and_process_data.py](src/apify_haystack/examples/crawl_and_process_data.py)
+- Retrieval-Augmented Generation (RAG): Extracting text content from a website and using it for question answering [rag_with_crawled_website.py](src/apify_haystack/examples/rag_with_crawled_website.py)
 
 ## Support
 

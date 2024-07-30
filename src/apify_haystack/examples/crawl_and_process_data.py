@@ -1,4 +1,6 @@
 """
+Crawl website, scrape text content, and store it in the InMemoryDocumentStore.
+
 This script demonstrates how to extract content from a website using the Apify actor: Website Content Crawler.
 The content is then cleaned, split into smaller chunks, embedded, and stored in the InMemoryDocumentStore.
 
@@ -78,7 +80,7 @@ pipe.run({"document_loader": {}})
 
 print(f"Added {document_store.count_documents()} to vector from Website Content Crawler")
 
-print("\nRetrieving documents from the document store: query='Haystack'")
-print("query='Haystack'\n")
+print("Retrieving documents from the document store: query='Haystack'")
+print("query='Haystack'")
 for doc in document_store.bm25_retrieval("Haystack", top_k=1):
     print(doc)

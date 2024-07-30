@@ -1,8 +1,5 @@
 """
-Retrieval-Augmented Generation (RAG)
-
-This script demonstrates how to extract text content from a website, store it in a vector database, and use
-it for question answering.
+Retrieval-Augmented Generation (RAG): Extracting text content from a website and using it for question answering.
 
 Steps involved:
 - Load environment variables, including API keys.
@@ -35,9 +32,9 @@ from haystack.utils.auth import Secret
 from apify_haystack import ApifyDatasetFromActorCall
 
 # Set APIFY-API-TOKEN here or use it from .env file
+load_dotenv()
 apify_token = "" or os.getenv("APIFY_API_TOKEN")
 openai_api_key = "" or os.getenv("OPENAI_API_KEY")
-load_dotenv()
 
 actor_id = "apify/website-content-crawler"
 run_input = {
@@ -55,6 +52,7 @@ apify_dataset_loader = ApifyDatasetFromActorCall(
 )
 
 # Components
+print("Initializing components...")
 document_store = InMemoryDocumentStore()
 
 docs_embedder = OpenAIDocumentEmbedder(api_key=Secret.from_token(openai_api_key))
@@ -82,6 +80,7 @@ Answer:
 prompt_builder = PromptBuilder(template=template)
 
 # Add components to your pipeline
+print("Initializing pipeline...")
 pipe = Pipeline()
 pipe.add_component("embedder", text_embedder)
 pipe.add_component("retriever", retriever)
@@ -94,6 +93,9 @@ pipe.connect("retriever", "prompt_builder.documents")
 pipe.connect("prompt_builder", "llm")
 
 question = "What is haystack?"
+
+print("Running pipeline ... crawling will take some time ...")
+print("You can visit https://console.apify.com/actors/runs to monitor the progress")
 
 response = pipe.run({"embedder": {"text": question}, "prompt_builder": {"question": question}})
 
@@ -108,4 +110,5 @@ examples = [
 
 for example in examples:
     response = pipe.run({"embedder": {"text": example}, "prompt_builder": {"question": example}})
-    print(response["llm"]["replies"][0])
+    print(f"question: {question}")
+    print(f"answer: {response['llm']['replies'][0]}")
