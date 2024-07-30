@@ -1,12 +1,16 @@
-"""Call Apify Actor and load a dataset to convert it to Haystack Documents.
+"""
+Call Apify Actor and load a dataset to convert it to Haystack Documents.
 
-Let's say that you want to crawl and get text  content from you https://docs.haystack.deepset.ai/
-You can call Apify's Website Content Crawler and get the scraped data in a dataset.
+This script demonstrates how to use Apify's Website Content Crawler to scrape text content from a specified website and convert the
+scraped data into Haystack Documents.
+
+For example, if you want to crawl and get text content from https://haystack.deepset.ai/, you can use this script to call the Apify actor
+and retrieve the data in a structured format.
 
 The script should produce the following output (an example of a single Document):
 ......
 Document(id=a617d376*****, content: 'Introduction to Haystack 2.x)
-Haystack is an open-source framework fo...', meta: 'url': 'https://docs.haystack.deepset.ai/docs/intro'
+Haystack is an open-source framework fo...', meta: {'url': 'https://docs.haystack.deepset.ai/docs/intro'}
 .....
 """
 
