@@ -17,7 +17,42 @@ pip install apify-haystack
 
 ## Examples
 
-See the [examples directory](https://github.com/apify/apify-haystack/blob/master/src/apify_haystack/examples) for more examples, here is a list of few of them
+Crawl website using Apify Website Content Crawler and convert it to Haystack Documents
+
+```python
+from dotenv import load_dotenv
+from haystack import Document
+
+from apify_haystack import ApifyDatasetFromActorCall
+
+# Sey APIFY-API-TOKEN here or load it from .env file
+apify_token = "" or load_dotenv()
+
+actor_id = "apify/website-content-crawler"
+run_input = {
+    "maxCrawlPages": 3,  # limit the number of pages to crawl
+    "startUrls": [{"url": "https://haystack.deepset.ai/"}],
+}
+
+
+def dataset_mapping_function(dataset_item: dict) -> Document:
+    return Document(content=dataset_item.get("text"), meta={"url": dataset_item.get("url")})
+
+
+actor = ApifyDatasetFromActorCall(
+    actor_id=actor_id, run_input=run_input, dataset_mapping_function=dataset_mapping_function
+)
+print(f"Calling the Apify actor {actor_id} ... crawling will take some time ...")
+print("You can monitor the progress at: https://console.apify.com/actors/runs")
+
+dataset = actor.run().get("documents")
+
+print(f"Loaded {len(dataset)} documents from the Apify Actor {actor_id}:")
+for d in dataset:
+    print(d)
+```
+
+See other examples in the [examples directory](https://github.com/apify/apify-haystack/blob/master/src/apify_haystack/examples) for more examples, here is a list of few of them
 
 - Load a dataset from Apify and convert it to Haystack Documents
 - Call Apify Actor and load a dataset to convert it to Haystack Documents

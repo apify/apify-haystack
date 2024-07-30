@@ -36,7 +36,9 @@ def dataset_mapping_function(dataset_item: dict) -> Document:
 actor = ApifyDatasetFromActorCall(
     actor_id=actor_id, run_input=run_input, dataset_mapping_function=dataset_mapping_function
 )
-print(f"Calling Apify actor {actor_id} ... crawling will take some time ...")
+print(f"Calling the Apify actor {actor_id} ... crawling will take some time ...")
+print("You can monitor the progress at: https://console.apify.com/actors/runs")
+
 dataset = actor.run().get("documents")
 
 print(f"Loaded {len(dataset)} documents from the Apify Actor {actor_id}:")
