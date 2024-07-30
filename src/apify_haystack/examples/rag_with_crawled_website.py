@@ -33,7 +33,7 @@ from apify_haystack import ApifyDatasetFromActorCall
 
 # Set APIFY-API-TOKEN here or use it from .env file
 load_dotenv()
-apify_token = "" or os.getenv("APIFY_API_TOKEN")
+apify_api_token = "" or os.getenv("APIFY_API_TOKEN")
 openai_api_key = "" or os.getenv("OPENAI_API_KEY")
 
 actor_id = "apify/website-content-crawler"

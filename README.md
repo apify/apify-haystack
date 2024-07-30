@@ -9,7 +9,7 @@ Haystack offers an ecosystem of tools for building, managing, and deploying sear
 
 ## Installation
 
-Apify-haystack is available as the [`apify-haystack`](https://pypi.org/project/apify-haystack/) PyPI package.
+Apify-haystack is available at the [`apify-haystack`](https://pypi.org/project/apify-haystack/) PyPI package.
 
 ```sh
 pip install apify-haystack
@@ -20,9 +20,9 @@ pip install apify-haystack
 Crawl website using Apify Website Content Crawler and convert it to Haystack Documents.
 
 You need to have an Apify account and API token to run this example.
-You can start with a free account at [Apify](https://apify.com/) and get your [API token]().
+You can start with a free account at [Apify](https://apify.com/) and get your [API token](https://docs.apify.com/platform/integrations/api).
 
-In the example below, specify `apify_api_token` and run the script
+In the example below, specify `apify_api_token` and run the script:
 
 ```python
 from dotenv import load_dotenv
