@@ -17,10 +17,10 @@ pip install apify-haystack
 
 ## Examples
 
-- Load a dataset from Apify and convert it to Haystack Documents: [apify_dataset_load.py](src/apify_haystack/examples/apify_dataset_load.py)
-- Call Apify Actor and load a dataset to convert it to Haystack Documents: [apify_actor_call.py](src/apify_haystack/examples/apify_actor_call.py)
-- Crawl website, scrape text content, and store it in the InMemoryDocumentStore: [crawl_and_process_data.py](src/apify_haystack/examples/crawl_and_process_data.py)
-- Retrieval-Augmented Generation (RAG): Extracting text content from a website and using it for question answering [rag_with_crawled_website.py](src/apify_haystack/examples/rag_with_crawled_website.py)
+- Load a dataset from Apify and convert it to Haystack Documents: [apify_dataset_load.py](https://github.com/apify/apify-haystack/blob/master/src/apify_haystack/examples/apify_dataset_load.py)
+- Call Apify Actor and load a dataset to convert it to Haystack Documents: [apify_actor_call.py](https://github.com/apify/apify-haystack/blob/master/src/apify_haystack/examples/apify_actor_call.py)
+- Crawl website, scrape text content, and store it in the InMemoryDocumentStore: [crawl_and_process_data.py](https://github.com/apify/apify-haystack/blob/master/src/apify_haystack/examples/crawl_and_process_data.py)
+- Retrieval-Augmented Generation (RAG): Extracting text content from a website and using it for question answering [rag_with_crawled_website.py](https://github.com/apify/apify-haystack/blob/master/src/apify_haystack/examples/rag_with_crawled_website.py)
 
 ## Support
 
