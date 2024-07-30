@@ -14,17 +14,23 @@ meta: {'url': 'https://haystack.deepset.ai/overview/quick-start',
 .....
 """
 
+import os
+
 from dotenv import load_dotenv
 from haystack import Document, Pipeline
-from haystack.components.embedders import SentenceTransformersDocumentEmbedder
+from haystack.components.embedders import OpenAIDocumentEmbedder
 from haystack.components.preprocessors import DocumentCleaner, DocumentSplitter
 from haystack.components.writers import DocumentWriter
 from haystack.document_stores.in_memory import InMemoryDocumentStore
+from haystack.utils.auth import Secret
 
 from apify_haystack import ApifyDatasetFromActorCall
 
-# Sey APIFY-API-TOKEN here or load it from .env file
-apify_token = "" or load_dotenv()
+load_dotenv()
+
+# Set APIFY-API-TOKEN here or use it from .env file
+apify_token = "" or os.getenv("APIFY_API_TOKEN")
+openai_api_key = "" or os.getenv("OPENAI_API_KEY")
 
 actor_id = "apify/website-content-crawler"
 run_input = {
@@ -46,7 +52,7 @@ print(f"Initialized InMemoryDocumentStore with {document_store.count_documents()
 
 document_cleaner = DocumentCleaner()
 document_splitter = DocumentSplitter(split_by="word", split_length=150, split_overlap=50)
-document_embedder = SentenceTransformersDocumentEmbedder(model="sentence-transformers/all-MiniLM-L6-v2")
+document_embedder = OpenAIDocumentEmbedder(api_key=Secret.from_token(openai_api_key))
 document_writer = DocumentWriter(document_store)
 
 pipe = Pipeline()
@@ -72,6 +78,7 @@ pipe.run({"document_loader": {}})
 
 print(f"Added {document_store.count_documents()} to vector from Website Content Crawler")
 
-print("Retrieving documents from the document store: query='Haystack'")
+print("\nRetrieving documents from the document store: query='Haystack'")
+print("query='Haystack'\n")
 for doc in document_store.bm25_retrieval("Haystack", top_k=1):
     print(doc)
