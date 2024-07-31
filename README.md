@@ -1,6 +1,6 @@
 # Apify-Haystack integration
 
-The Apify-Haystack integration allows easy interaction between the Apify platform and Haystack.
+The Apify-Haystack integration allows easy interaction between the [Apify](https://apify.com/) platform and [Haystack](https://haystack.deepset.ai/).
 
 Apify is a platform for web scraping, data extraction, and web automation tasks.
 It provides serverless applications called Actors for different tasks, like crawling websites, and scraping Facebook, Instagram, and Google results, etc.
