@@ -30,7 +30,7 @@ from apify_haystack import ApifyDatasetFromActorCall
 
 load_dotenv()
 
-# Set APIFY-API-TOKEN here or use it from .env file
+# Set APIFY_API_TOKEN here or use it from .env file
 apify_api_token = "" or os.getenv("APIFY_API_TOKEN")
 openai_api_key = "" or os.getenv("OPENAI_API_KEY")
 

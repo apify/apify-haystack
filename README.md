@@ -17,7 +17,7 @@ pip install apify-haystack
 
 ## Examples
 
-Crawl website using Apify Website Content Crawler and convert it to Haystack Documents.
+### Crawl a website Using Apify Website Content Crawler and convert it to Haystack Documents
 
 You need to have an Apify account and API token to run this example.
 You can start with a free account at [Apify](https://apify.com/) and get your [API token](https://docs.apify.com/platform/integrations/api).
@@ -56,6 +56,8 @@ print(f"Loaded {len(dataset)} documents from the Apify Actor {actor_id}:")
 for d in dataset:
     print(d)
 ```
+
+### More Examples
 
 See other examples in the [examples directory](https://github.com/apify/apify-haystack/blob/master/src/apify_haystack/examples) for more examples, here is a list of few of them
 
