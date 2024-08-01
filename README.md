@@ -17,7 +17,7 @@ pip install apify-haystack
 
 ## Examples
 
-### Crawl a website Using Apify Website Content Crawler and convert it to Haystack Documents
+### Crawl a website using Apify's Website Content Crawler and convert it to Haystack Documents
 
 You need to have an Apify account and API token to run this example.
 You can start with a free account at [Apify](https://apify.com/) and get your [API token](https://docs.apify.com/platform/integrations/api).
@@ -57,13 +57,13 @@ for d in dataset:
     print(d)
 ```
 
-### More Examples
+### More examples
 
 See other examples in the [examples directory](https://github.com/apify/apify-haystack/blob/master/src/apify_haystack/examples) for more examples, here is a list of few of them
 
-- Load a dataset from Apify and convert it to Haystack Document
-- Call [Website Content Crawler](https://apify.com/apify/website-content-crawler) Actor and convert the data into the Haystack Documents
-- Crawl website, retrieve text content, and store it in the `InMemoryDocumentStore`
+- Load a dataset from Apify and convert it to a Haystack Document
+- Call [Website Content Crawler](https://apify.com/apify/website-content-crawler) and convert the data into the Haystack Documents
+- Crawl websites, retrieve text content, and store it in the `InMemoryDocumentStore`
 - Retrieval-Augmented Generation (RAG): Extracting text from a website & question answering
 
 ## Support

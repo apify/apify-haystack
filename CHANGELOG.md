@@ -3,7 +3,7 @@
 ## [0.1.0] Not yet released  (2024-07-30)
 
 🚀 Features
-- Added support for Apify-Haystack integration
+- Added support for the Apify-Haystack integration
 - Added code examples
 
 ## [0.0.1] (2024-07-25)
