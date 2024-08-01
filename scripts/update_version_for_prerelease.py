@@ -24,12 +24,17 @@ if __name__ == "__main__":
         prerelease_prefix = "b"
     elif prerelease_type == "rc":
         prerelease_prefix = "rc"
+    else:
+        raise RuntimeError(f"Unknown prerelease type: {prerelease_type}")
 
     current_version = get_current_package_version()
 
     # We can only transform a stable release version (X.Y.Z) to a prerelease version (X.Y.ZxxxN)
     if not re.match(r"^\d+\.\d+\.\d+$", current_version):
-        raise RuntimeError(f"The current version {current_version} does not match the proper semver format for stable releases (X.Y.Z)")
+        raise RuntimeError(
+            f"The current version {current_version} does not match the proper semver format for "
+            f"stable releases (X.Y.Z)"
+        )
 
     # Load the version numbers of the currently published versions from PyPI
     published_versions = get_published_package_versions()

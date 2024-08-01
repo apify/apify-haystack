@@ -4,7 +4,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
 name = "apify_haystack"
-version = "0.0.1"
+version = "0.1.0"
 description = "Apify-haystack integration"
 authors = ["Apify Technologies s.r.o. <support@apify.com>"]
 homepage = "https://apify.com"
@@ -43,6 +43,9 @@ keywords = [
 # https://github.com/apify/apify-sdk-python/pull/154.
 [tool.poetry.dependencies]
 python = "^3.9"
+apify-client = "^1.7.1"
+haystack-ai = "^2.3.1"
+python-dotenv = "^1.0.1"
 
 [tool.poetry.group.dev.dependencies]
 build = "~1.2.0"
@@ -54,7 +57,7 @@ ruff = "~0.5.0"
 setuptools = "~70.3.0"  # setuptools are used by pytest, but not explicitly required
 
 [tool.ruff]
-line-length = 150
+line-length = 120
 
 [tool.ruff.lint]
 select = ["ALL"]
@@ -110,6 +113,12 @@ indent-style = "space"
     "T20",     # flake8-print
     "TRY301",  # Abstract `raise` to an inner function
 ]
+"**/{examples}/*" = [
+    "D",       # Everything from the pydocstyle
+    "INP001",  # File {filename} is part of an implicit namespace package, add an __init__.py
+    "T20",     # flake8-print
+]
+
 
 [tool.ruff.lint.flake8-quotes]
 docstring-quotes = "double"
@@ -138,6 +147,10 @@ warn_redundant_casts = true
 warn_return_any = true
 warn_unreachable = true
 warn_unused_ignores = true
+
+[[tool.mypy.overrides]]
+module = "haystack.*"
+ignore_missing_imports = true
 
 [tool.mypy-sortedcollections]
 ignore_missing_imports = true
