@@ -64,6 +64,8 @@ retriever = InMemoryEmbeddingRetriever(document_store)
 generator = OpenAIGenerator(model="gpt-3.5-turbo")
 
 # Load documents from Apify
+print("Crawling will take some time ...")
+print("You can visit https://console.apify.com/actors/runs to monitor the progress")
 docs = apify_dataset_loader.run()
 embeddings = docs_embedder.run(docs.get("documents"))
 document_store.write_documents(embeddings["documents"])
@@ -97,8 +99,6 @@ pipe.connect("prompt_builder", "llm")
 
 question = "What is haystack?"
 
-print("Running pipeline ... crawling will take some time ...")
-print("You can visit https://console.apify.com/actors/runs to monitor the progress")
 
 response = pipe.run({"embedder": {"text": question}, "prompt_builder": {"question": question}})
 
