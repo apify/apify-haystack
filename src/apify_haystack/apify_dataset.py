@@ -12,7 +12,7 @@ from apify_haystack.constants import HAYSTACK_ATTRIBUTE_USER_AGENT
 
 @component
 class ApifyDatasetLoader:
-    """Load datasets produced by the `Apify Actors`.
+    """Load datasets produced by `Apify Actors`.
 
     Actors are serverless functions that can be used to scrape, crawl, and extract data from the web.
     For details, see https://docs.apify.com/platform/integrations/haystack
@@ -64,9 +64,9 @@ class ApifyDatasetLoader:
 
 @component
 class ApifyDatasetFromActorCall:
-    """Get Apify dataset by calling Apify Actor.
+    """Get an Apify dataset by calling an Apify Actor.
 
-    Perform call of Apify actor and load produced dataset.
+    Perform call of Apify Actor and load produced dataset.
     For details, see https://docs.apify.com/platform/integrations/haystack
 
     To use, you should have the ``apify-client`` python package installed,
@@ -147,9 +147,9 @@ class ApifyDatasetFromActorCall:
 
 @component
 class ApifyDatasetFromTaskCall:
-    """Get Apify dataset by calling Apify Task.
+    """Get an Apify dataset by calling an Apify task.
 
-    Perform call of Apify task and load produced dataset.
+    Perform a call of an Apify task and load the produced dataset.
     """
 
     def __init__(
@@ -171,7 +171,7 @@ class ApifyDatasetFromTaskCall:
             dataset_mapping_function (Callable): A function that takes a single
                 dictionary (an Apify dataset item) and converts it to an
                 instance of the Document class.
-            build (str, optional): Optionally specifies the actor build to run.
+            build (str, optional): Optionally specifies the Actor build to run.
                 It can be either a build tag or build number.
             memory_mbytes (int, optional): Optional memory limit for the run, in megabytes.
             timeout_secs (int, optional): Optional timeout for the run, in seconds.
