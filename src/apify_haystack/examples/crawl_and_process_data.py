@@ -1,7 +1,7 @@
 """
-Crawl website, scrape text content, and store it in the InMemoryDocumentStore.
+Crawl websites, scrape text content, and store it in the InMemoryDocumentStore.
 
-This script demonstrates how to extract content from a website using the Apify actor: Website Content Crawler.
+This script demonstrates how to extract content from a website using Apify's Website Content Crawler.
 The content is then cleaned, split into smaller chunks, embedded, and stored in the InMemoryDocumentStore.
 
 After the pipeline is executed, the documents are retrieved from the document store using BM25 retrieval.

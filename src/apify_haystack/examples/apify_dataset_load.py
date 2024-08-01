@@ -2,7 +2,7 @@
 Load a dataset from Apify and convert it to Haystack Documents.
 
 This script demonstrates how to load a dataset from Apify and convert it into Haystack Documents.
-Assuming you have run an Apify actor that scraped web pages from https://docs.haystack.deepset.ai/,
+Assuming you have run an Apify Actor that scraped web pages from https://docs.haystack.deepset.ai/,
 you can use the dataset ID to load the dataset and transform it into a structured format suitable for Haystack.
 
 The script should produce the following output (an example of a single Document):
