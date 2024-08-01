@@ -69,7 +69,7 @@ class ApifyDatasetFromActorCall:
     Perform call of Apify Actor and load produced dataset.
     For details, see https://docs.apify.com/platform/integrations/haystack
 
-    To use, you should have the ``apify-client`` python package installed,
+    To use it, you should have the ``apify-client`` python package installed,
     and the environment variable ``APIFY_API_TOKEN`` set with your API key, or pass
     `apify_api_token` as a named parameter to the constructor.
     """
