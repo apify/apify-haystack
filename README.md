@@ -1,5 +1,9 @@
 # Apify-Haystack integration
 
+[![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://github.com/apify/apify-haystack/blob/main/LICENSE)
+[![PyPi Package](https://badge.fury.io/py/apify-haystack.svg)](https://badge.fury.io/py/apify-haystack)
+[![Python](https://img.shields.io/pypi/pyversions/apify-haystack)](https://pypi.org/project/apify-haystack)
+
 The Apify-Haystack integration allows easy interaction between the [Apify](https://apify.com/) platform and [Haystack](https://haystack.deepset.ai/).
 
 Apify is a platform for web scraping, data extraction, and web automation tasks.
