@@ -1,6 +1,6 @@
 # Changelog
 
-## [0.1.0] Not yet released  (2024-07-30)
+## [0.1.0](https://github.com/apify/apify-haystack/releases/tag/0.1.0)  (2024-07-30)
 
 🚀 Features
 - Added support for the Apify-Haystack integration
