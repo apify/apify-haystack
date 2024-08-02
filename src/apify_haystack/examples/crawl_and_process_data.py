@@ -4,7 +4,8 @@ Crawl websites, scrape text content, and store it in the InMemoryDocumentStore.
 This script demonstrates how to extract content from a website using Apify's Website Content Crawler.
 The content is then cleaned, split into smaller chunks, embedded, and stored in the InMemoryDocumentStore.
 
-After the pipeline is executed, the documents are retrieved from the document store using BM25 retrieval.
+After the pipeline is executed, the documents are retrieved from the document store
+using BM25 retrieval and vector similarity.
 
 The script should produce the following output (an example of a single Document):
 ......
@@ -20,7 +21,7 @@ import os
 
 from dotenv import load_dotenv
 from haystack import Document, Pipeline
-from haystack.components.embedders import OpenAIDocumentEmbedder
+from haystack.components.embedders import OpenAIDocumentEmbedder, OpenAITextEmbedder
 from haystack.components.preprocessors import DocumentCleaner, DocumentSplitter
 from haystack.components.writers import DocumentWriter
 from haystack.document_stores.in_memory import InMemoryDocumentStore
@@ -83,7 +84,12 @@ pipe.run({"document_loader": {}})
 
 print(f"Added {document_store.count_documents()} to vector from Website Content Crawler")
 
-print("Retrieving documents from the document store: query='Haystack'")
+print("Retrieving documents from the document store using BM25")
 print("query='Haystack'")
 for doc in document_store.bm25_retrieval("Haystack", top_k=1):
+    print(doc)
+
+print("Retrieving documents from the document store using vector similarity")
+print("query='What is Haystack'")
+for doc in document_store.embedding_retrieval(OpenAITextEmbedder().run("Haystack")["embedding"], top_k=1):
     print(doc)

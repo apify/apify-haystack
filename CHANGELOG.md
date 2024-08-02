@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.1.2](https://github.com/apify/apify-haystack/releases/tag/0.1.2)  (2024-08-02)
+
+🐛 Bug Fixes
+- Correct examples in the documentation
+
 ## [0.1.1](https://github.com/apify/apify-haystack/releases/tag/0.1.1)  (2024-07-31)
 
 🐛 Bug Fixes
