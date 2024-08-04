@@ -20,21 +20,18 @@ Haystack is an open-source framework for building production-ready LLM applicati
 
 import os
 
-from dotenv import load_dotenv
 from haystack import Document, Pipeline
 from haystack.components.builders import PromptBuilder
 from haystack.components.embedders import OpenAIDocumentEmbedder, OpenAITextEmbedder
 from haystack.components.generators import OpenAIGenerator
 from haystack.components.retrievers.in_memory import InMemoryEmbeddingRetriever
 from haystack.document_stores.in_memory import InMemoryDocumentStore
-from haystack.utils.auth import Secret
 
 from apify_haystack import ApifyDatasetFromActorCall
 
-# Set APIFY_API_TOKEN here or use it from .env file
-load_dotenv()
-apify_api_token = "" or os.getenv("APIFY_API_TOKEN")
-openai_api_key = "" or os.getenv("OPENAI_API_KEY")
+# Set API keys here
+os.environ["APIFY_API_TOKEN"] = ""
+os.environ["OPENAI_API_KEY"] = ""
 
 actor_id = "apify/website-content-crawler"
 run_input = {
@@ -51,15 +48,14 @@ apify_dataset_loader = ApifyDatasetFromActorCall(
     actor_id=actor_id,
     run_input=run_input,
     dataset_mapping_function=dataset_mapping_function,
-    apify_api_token=apify_api_token,
 )
 
 # Components
 print("Initializing components...")
 document_store = InMemoryDocumentStore()
 
-docs_embedder = OpenAIDocumentEmbedder(api_key=Secret.from_token(openai_api_key))
-text_embedder = OpenAITextEmbedder(api_key=Secret.from_token(openai_api_key))
+docs_embedder = OpenAIDocumentEmbedder()
+text_embedder = OpenAITextEmbedder()
 retriever = InMemoryEmbeddingRetriever(document_store)
 generator = OpenAIGenerator(model="gpt-3.5-turbo")
 

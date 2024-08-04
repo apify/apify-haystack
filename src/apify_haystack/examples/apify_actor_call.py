@@ -14,13 +14,14 @@ Haystack is an open-source framework fo...', meta: {'url': 'https://docs.haystac
 .....
 """
 
-from dotenv import load_dotenv
+import os
+
 from haystack import Document
 
 from apify_haystack import ApifyDatasetFromActorCall
 
-# Set APIFY_API_TOKEN here or load it from .env file
-apify_api_token = "" or load_dotenv()
+# Set API keys here
+os.environ["APIFY_API_TOKEN"] = ""
 
 actor_id = "apify/website-content-crawler"
 run_input = {
