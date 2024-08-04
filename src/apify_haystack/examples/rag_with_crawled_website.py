@@ -30,8 +30,8 @@ from haystack.document_stores.in_memory import InMemoryDocumentStore
 from apify_haystack import ApifyDatasetFromActorCall
 
 # Set API keys here
-os.environ["APIFY_API_TOKEN"] = ""
-os.environ["OPENAI_API_KEY"] = ""
+os.environ["APIFY_API_TOKEN"] = "YOUR-APIFY-API-TOKEN"
+os.environ["OPENAI_API_KEY"] = "YOUR-OPENAI-API-KEY"
 
 actor_id = "apify/website-content-crawler"
 run_input = {
