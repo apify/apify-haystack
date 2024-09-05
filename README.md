@@ -68,7 +68,8 @@ See other examples in the [examples directory](https://github.com/apify/apify-ha
 - Load a dataset from Apify and convert it to a Haystack Document
 - Call [Website Content Crawler](https://apify.com/apify/website-content-crawler) and convert the data into the Haystack Documents
 - Crawl websites, retrieve text content, and store it in the `InMemoryDocumentStore`
-- Retrieval-Augmented Generation (RAG): Extracting text from a website & question answering
+- Retrieval-Augmented Generation (RAG): Extracting text from a website & question answering <a href="https://colab.research.google.com/github/deepset-ai/haystack-cookbook/blob/main/notebooks/apify_haystack_rag.ipynb" target="_parent"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"/></a>
+- Analyze Your Instagram Comments’ Vibe with Apify and Haystack
 
 ## Support
 

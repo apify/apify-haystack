@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.1.4](https://github.com/apify/apify-haystack/releases/tag/0.1.4)  (2024-09-04)
+
+🚀 Features
+- Allow to add Actor inputs (`run_input`) in the ApifyDatasetFromActorCall.run() method
+
 ## [0.1.3](https://github.com/apify/apify-haystack/releases/tag/0.1.3)  (2024-08-04)
 
 🚀 Features

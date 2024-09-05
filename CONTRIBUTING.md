@@ -70,7 +70,7 @@ Important notes:
 
 - Ensure the version number in `pyproject.toml` is updated before creating a new release. If a stable version with the same version number already exists on PyPI, the publish process will fail.
 - The release process also fails if the version is not documented in `CHANGELOG.md`. Make sure to describe the changes in the new version there.
-- After a stable release, ensure to increment the version number in both `pyproject.toml` and `apify_haystack/__init__.py`.
+- After a stable release, ensure to increment the version number in both `pyproject.toml`.
 
 ### Beta release checklist
 
