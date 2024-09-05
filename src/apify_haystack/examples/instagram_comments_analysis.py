@@ -76,10 +76,10 @@ url1 = "https://www.instagram.com/p/C_a9jcRuJZZ/"  # @tiffintech on How to easil
 print(f"\nScraping Instagram comments for: {url1} and running analysis (it might take around 30-60 secs) ...\n")
 
 res = pipe.run({"loader": {"run_input": {"directUrls": [url1]}}})
-print("Analysis:", res.get("llm", {}).get("replies", "No response")[0])
+print("Analysis:", res.get("llm", {}).get("replies", ["No response"])[0])
 
 url2 = "https://www.instagram.com/p/C_RgBzogufK/"  # @maharishis on Affordable Care Act
 print(f"\nScraping Instagram comments for: {url2} and running analysis (it might take around 30-60 secs)... \n")
 
 res = pipe.run({"loader": {"run_input": {"directUrls": [url2]}}})
-print("Analysis:", res.get("llm", {}).get("replies", "No response")[0])
+print("Analysis:", res.get("llm", {}).get("replies", ["No response"])[0])
