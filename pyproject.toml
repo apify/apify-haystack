@@ -4,7 +4,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
 name = "apify_haystack"
-version = "0.1.4"
+version = "0.1.5"
 description = "Apify-haystack integration"
 authors = ["Apify Technologies s.r.o. <support@apify.com>"]
 homepage = "https://apify.com"
