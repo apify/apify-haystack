@@ -43,33 +43,17 @@ jobs:
           custom_version: ${{ inputs.custom_version }}
           existing_changelog_path: CHANGELOG.md
 
-  # If github.ref points to a [ci skip] commit, we assume that it was added by the pre_release workflow,
-  # which doesn't push the commit if code checks don't pass.
-  # Otherwise, the checks will have been triggered by the `run_code_checks` workflow.
-  wait_for_checks:
-    name: Wait for code checks to pass
-    runs-on: ubuntu-latest
-    steps:
-      - uses: lewagon/wait-on-check-action@v1.3.4
-        with:
-          ref: ${{ github.ref }}
-          repo-token: ${{ secrets.GITHUB_TOKEN }}
-          check-regexp: "( check| tests)$"
-          wait-interval: 5
+  lint_check:
+    name: Lint check
+    uses: apify/workflows/.github/workflows/python_lint_check.yaml@main
 
-  update_changelog:
-    name: Update changelog
-    needs: [release_metadata, wait_for_checks]
-    uses: apify/workflows/.github/workflows/python_bump_and_update_changelog.yaml@main
-    with:
-      version_number: ${{ needs.release_metadata.outputs.version_number }}
-      changelog: ${{ needs.release_metadata.outputs.changelog }}
-    secrets:
-      APIFY_SERVICE_ACCOUNT_GITHUB_TOKEN: ${{ secrets.APIFY_SERVICE_ACCOUNT_GITHUB_TOKEN }}
+  type_check:
+    name: Type check
+    uses: apify/workflows/.github/workflows/python_type_check.yaml@main
 
   create_github_release:
     name: Create github release
-    needs: [release_metadata, update_changelog]
+    needs: [release_metadata, lint_check, type_check]
     runs-on: ubuntu-latest
     env:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -79,12 +63,11 @@ jobs:
         with:
           tag_name: ${{ needs.release_metadata.outputs.tag_name }}
           name: ${{ needs.release_metadata.outputs.version_number }}
-          target_commitish: ${{ needs.update_changelog.outputs.changelog_commitish }}
           body: ${{ needs.release_metadata.outputs.release_notes }}
 
   publish_to_pypi:
     name: Publish to PyPI
-    needs: [release_metadata, update_changelog]
+    needs: [release_metadata, lint_check, type_check]
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -99,7 +82,6 @@ jobs:
           package_name: apify-haystack
           is_prerelease: ""
           version_number: ${{ needs.release_metadata.outputs.version_number }}
-          ref: ${{ needs.update_changelog.outputs.changelog_commitish }}
       # Publishes the package to PyPI using PyPA official GitHub action with OIDC authentication.
       - name: Publish package to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1
