@@ -62,9 +62,8 @@ We adhere to the [Google docstring format](https://sphinxcontrib-napoleon.readth
 
 Publishing new versions to [PyPI](https://pypi.org/project/crawlee) is automated through GitHub Actions.
 
-- **Alpha releases**: Alpha releases can be triggered manually via GitHub Actions, typically from a pull request or a dedicated branch. This allows for testing new features or changes before merging into the master branch. Alpha releases use the version number from `pyproject.toml` with an alpha suffix.
-- **Beta releases**: On each commit to the master branch, a new beta release is automatically published. The version number is sourced from `pyproject.toml`, with the beta version suffix incremented by 1 from the last beta release on PyPI.
-- **Stable releases**: A stable version is published when a new release is created using GitHub Releases. The version number is taken from `pyproject.toml`, and the built package assets are automatically uploaded to the GitHub release.
+- **Beta releases**: On each commit to the master branch, a new beta release is automatically published. The version number is determined based on the latest release and conventional commits. The beta version suffix is incremented by 1 from the last beta release on PyPI.
+- **Stable releases**: A stable version release may be created by triggering the `run_release` GitHub Actions workflow. The version number is determined based on the latest release and conventional commits (`auto` release type), or it may be overriden using the `custom` release type.
 
 Important notes:
 
