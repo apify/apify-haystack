@@ -78,4 +78,4 @@ jobs:
           echo "Build artifacts uploaded successfully."
 
         env:
-          GITHUB_TOKEN: ${{ secrets.APIFY_SERVICE_ACCOUNT_GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
