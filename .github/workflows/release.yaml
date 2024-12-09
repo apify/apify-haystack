@@ -43,29 +43,13 @@ jobs:
           custom_version: ${{ inputs.custom_version }}
           existing_changelog_path: CHANGELOG.md
 
-  # If github.ref points to a [ci skip] commit, we assume that it was added by the pre_release workflow,
-  # which doesn't push the commit if code checks don't pass.
-  # Otherwise, the checks will have been triggered by the `run_code_checks` workflow.
-  wait_for_checks:
-    name: Wait for code checks to pass
-    runs-on: ubuntu-latest
-    steps:
-      - uses: lewagon/wait-on-check-action@v1.3.4
-        with:
-          ref: ${{ github.ref }}
-          repo-token: ${{ secrets.GITHUB_TOKEN }}
-          check-regexp: "( check| tests)$"
-          wait-interval: 5
+  lint_check:
+    name: Lint check
+    uses: ./.github/workflows/python_lint_check.yaml
 
-  update_changelog:
-    name: Update changelog
-    needs: [release_metadata, wait_for_checks]
-    uses: apify/workflows/.github/workflows/python_bump_and_update_changelog.yaml@main
-    with:
-      version_number: ${{ needs.release_metadata.outputs.version_number }}
-      changelog: ${{ needs.release_metadata.outputs.changelog }}
-    secrets:
-      APIFY_SERVICE_ACCOUNT_GITHUB_TOKEN: ${{ secrets.APIFY_SERVICE_ACCOUNT_GITHUB_TOKEN }}
+  type_check:
+    name: Type check
+    uses: ./.github/workflows/python_type_check.yaml
 
   create_github_release:
     name: Create github release
