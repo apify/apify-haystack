@@ -4,7 +4,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
 name = "apify_haystack"
-version = "0.1.5"
+version = "0.1.6"
 description = "Apify-haystack integration"
 authors = ["Apify Technologies s.r.o. <support@apify.com>"]
 homepage = "https://apify.com"
@@ -12,7 +12,7 @@ license = "Apache-2.0"
 readme = "README.md"
 packages = [{ include = "apify_haystack", from = "src" }]
 classifiers = [
-    "Development Status :: 3 - Alpha",
+    "Development Status :: 5 - Production/Stable",
     "Intended Audience :: Developers",
     "License :: OSI Approved :: Apache Software License",
     "Operating System :: OS Independent",

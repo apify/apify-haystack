@@ -1,6 +1,11 @@
 # Changelog
 
-## [0.1.5](https://github.com/apify/apify-haystack/releases/tag/0.1.4)  (2024-09-04)
+## [0.1.6](https://github.com/apify/apify-haystack/releases/tag/0.1.6)  (2024-12-09)
+
+🐛 Bug Fixes
+- Fix description in pyproject.toml
+
+## [0.1.5](https://github.com/apify/apify-haystack/releases/tag/0.1.5)  (2024-09-04)
 
 🚀 Features
 - Add link to google colab in the README
