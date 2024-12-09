@@ -13,7 +13,7 @@ install-dev:
 build:
 	poetry build --no-interaction -vv
 
-# APIFY_PYPI_TOKEN_CRAWLEE is expected to be set in the environment
+# APIFY_PYPI_TOKEN_APIFY_HAYSTACK is expected to be set in the environment
 publish-to-pypi:
 	poetry config pypi-token.pypi "${APIFY_PYPI_TOKEN_APIFY_HAYSTACK}"
 	poetry publish --no-interaction -vv
