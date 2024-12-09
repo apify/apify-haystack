@@ -43,13 +43,17 @@ jobs:
           custom_version: ${{ inputs.custom_version }}
           existing_changelog_path: CHANGELOG.md
 
-  code_checks:
-    name: Type and lint check
-    uses: ./.github/workflows/run_code_checks.yaml
+  lint_check:
+    name: Lint check
+    uses: apify/workflows/.github/workflows/python_lint_check.yaml@main
+
+  type_check:
+    name: Type check
+    uses: apify/workflows/.github/workflows/python_type_check.yaml@main
 
   create_github_release:
     name: Create github release
-    needs: [release_metadata, code_checks]
+    needs: [release_metadata, lint_check, type_check]
     runs-on: ubuntu-latest
     env:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -63,7 +67,7 @@ jobs:
 
   publish_to_pypi:
     name: Publish to PyPI
-    needs: [release_metadata, code_checks]
+    needs: [release_metadata, lint_check, type_check]
     runs-on: ubuntu-latest
     permissions:
       contents: write
