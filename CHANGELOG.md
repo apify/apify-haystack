@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.1.7](https://github.com/apify/apify-haystack/releases/tag/0.1.7)  (2024-12-09)
+
+🐛 Bug Fixes
+- Use CI from crawlee-python to publish to PyPI
+
 ## [0.1.6](https://github.com/apify/apify-haystack/releases/tag/0.1.6)  (2024-12-09)
 
 🐛 Bug Fixes
