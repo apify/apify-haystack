@@ -1,13 +1,14 @@
 from __future__ import annotations
 
 import os
+from datetime import timedelta
 from typing import TYPE_CHECKING
 
 from apify_client import ApifyClient
 from haystack import component
 from haystack.dataclasses import Document
 
-from apify_haystack.constants import HAYSTACK_ATTRIBUTE_USER_AGENT
+from apify_haystack.constants import HAYSTACK_ATTRIBUTE_USER_AGENT, HAYSTACK_INTEGRATION_PLATFORM
 
 if TYPE_CHECKING:
     from collections.abc import Callable
@@ -49,10 +50,7 @@ class ApifyDatasetLoader:
         self.dataset_id = dataset_id
         self.dataset_mapping_function = dataset_mapping_function
 
-        # Add a custom user-agent to the httpx client for attribution purposes
-        self.client = ApifyClient()
-        if httpx_client := getattr(self.client.http_client, 'httpx_client', None):
-            httpx_client.headers['user-agent'] += f'; {HAYSTACK_ATTRIBUTE_USER_AGENT}'
+        self.client = _create_client()
 
     @component.output_types(documents=list[Document])
     def run(self):  # noqa: ANN201
@@ -61,8 +59,7 @@ class ApifyDatasetLoader:
         Type-hint note: the output is not type-hinted, otherwise linting complains
         that `run` method is not haystack a component
         """
-        dataset_items = self.client.dataset(self.dataset_id).list_items(clean=True).items
-        return {'documents': list(map(self.dataset_mapping_function, dataset_items))}
+        return {'documents': _load_documents(self.client, self.dataset_id, self.dataset_mapping_function)}
 
 
 @component
@@ -117,11 +114,7 @@ class ApifyDatasetFromActorCall:
                 'Apify API token not found. Please provide Apify API token when initializing '
                 'ApifyDatasetCall, or set the environment variable APIFY_API_TOKEN.'
             )
-        # Add a custom user-agent to the httpx client for attribution purposes
-        self.client = ApifyClient(apify_api_token)
-
-        if httpx_client := getattr(self.client.http_client, 'httpx_client', None):
-            httpx_client.headers['user-agent'] += f'; {HAYSTACK_ATTRIBUTE_USER_AGENT}'
+        self.client = _create_client(apify_api_token)
 
     @component.output_types(documents=list[Document])
     def run(self, run_input: dict | None = None):  # noqa: ANN201
@@ -147,24 +140,16 @@ class ApifyDatasetFromActorCall:
         if not (run_input := _merge_inputs(self.run_input, run_input)):
             raise ValueError('Please provide the run_input either in the constructor or in the run method.')
 
-        if not (
-            actor_call := self.client.actor(self.actor_id).call(
-                run_input=run_input,
-                build=self.build,
-                memory_mbytes=self.memory_mbytes,
-                timeout_secs=self.timeout_secs,
-            )
-        ):
+        run = self.client.actor(self.actor_id).call(
+            run_input=run_input,
+            build=self.build,
+            memory_mbytes=self.memory_mbytes,
+            run_timeout=_to_timedelta(self.timeout_secs),
+        )
+        if run is None:
             raise ValueError(f'No response found in the actor {self.actor_id} call')
 
-        if not (dataset_id := actor_call.get('defaultDatasetId')):
-            raise ValueError(f'No dataset found in the actor {self.actor_id} call response.')
-
-        loader = ApifyDatasetLoader(
-            dataset_id=dataset_id,
-            dataset_mapping_function=self.dataset_mapping_function,
-        )
-        return loader.run()
+        return {'documents': _load_documents(self.client, run.default_dataset_id, self.dataset_mapping_function)}
 
 
 @component
@@ -214,11 +199,7 @@ class ApifyDatasetFromTaskCall:
                 'Apify API token not found. Please provide Apify API token when initializing '
                 'ApifyDatasetCall, or set the environment variable APIFY_API_TOKEN.'
             )
-        # Add a custom user-agent to the httpx client for attribution purposes
-        self.client = ApifyClient(apify_api_token)
-
-        if httpx_client := getattr(self.client.http_client, 'httpx_client', None):
-            httpx_client.headers['user-agent'] += f'; {HAYSTACK_ATTRIBUTE_USER_AGENT}'
+        self.client = _create_client(apify_api_token)
 
     @component.output_types(documents=list[Document])
     def run(self, task_input: dict | None = None):  # noqa: ANN201
@@ -235,27 +216,42 @@ class ApifyDatasetFromTaskCall:
         if not (task_input := _merge_inputs(self.task_input, task_input)):
             raise ValueError('Please provide the task_input either in the constructor or in the run method.')
 
-        if not (
-            actor_call := self.client.task(self.task_id).call(
-                task_input=task_input,
-                build=self.build,
-                memory_mbytes=self.memory_mbytes,
-                timeout_secs=self.timeout_secs,
-            )
-        ):
-            raise ValueError(f'No response found in the actor {self.task_id} call')
-
-        if not (dataset_id := actor_call.get('defaultDatasetId')):
-            raise ValueError(f'No dataset found in the actor {self.task_id} call response.')
-
-        loader = ApifyDatasetLoader(
-            dataset_id=dataset_id,
-            dataset_mapping_function=self.dataset_mapping_function,
+        run = self.client.task(self.task_id).call(
+            task_input=task_input,
+            build=self.build,
+            memory_mbytes=self.memory_mbytes,
+            run_timeout=_to_timedelta(self.timeout_secs),
         )
-        return loader.run()
+        if run is None:
+            raise ValueError(f'No response found in the task {self.task_id} call')
+
+        return {'documents': _load_documents(self.client, run.default_dataset_id, self.dataset_mapping_function)}
 
 
 def _merge_inputs(input1: dict | None, input2: dict | None) -> dict | None:
     if input1 and input2:
         return input1 | input2
     return input1 or input2
+
+
+def _create_client(token: str | None = None) -> ApifyClient:
+    """Create an Apify client that identifies its requests as coming from this integration."""
+    client = ApifyClient(token, headers={'x-apify-integration-platform': HAYSTACK_INTEGRATION_PLATFORM})
+
+    # The user-agent marker predates the integration platform header and is kept for older platform paths. Passing it
+    # through `headers` would replace apify-client's own user agent, so the header is extended in place.
+    client.http_client._headers['User-Agent'] += f'; {HAYSTACK_ATTRIBUTE_USER_AGENT}'  # noqa: SLF001
+    return client
+
+
+def _load_documents(
+    client: ApifyClient,
+    dataset_id: str,
+    dataset_mapping_function: Callable[[dict], Document],
+) -> list[Document]:
+    dataset_items = client.dataset(dataset_id).list_items(clean=True).items
+    return [dataset_mapping_function(item) for item in dataset_items]
+
+
+def _to_timedelta(seconds: int | None) -> timedelta | None:
+    return None if seconds is None else timedelta(seconds=seconds)

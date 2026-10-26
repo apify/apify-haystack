@@ -1,9 +1,11 @@
 from __future__ import annotations
 
+from datetime import timedelta
 from typing import TYPE_CHECKING, Any
 from unittest.mock import Mock
 
 import pytest
+from apify_client._models import Run
 from haystack import Document
 
 from apify_haystack import ApifyDatasetFromActorCall, ApifyDatasetFromTaskCall, ApifyDatasetLoader, apify_dataset
@@ -24,10 +26,10 @@ def to_document(item: dict) -> Document:
 @pytest.fixture
 def client_class(monkeypatch: pytest.MonkeyPatch) -> Mock:
     client = Mock()
-    client.http_client.httpx_client.headers = {'user-agent': 'ApifyClient/test'}
+    client.http_client._headers = {'User-Agent': 'ApifyClient/test'}
     client.dataset.return_value.list_items.return_value.items = ITEMS
-    client.actor.return_value.call.return_value = {'defaultDatasetId': 'dataset-id'}
-    client.task.return_value.call.return_value = {'defaultDatasetId': 'dataset-id'}
+    client.actor.return_value.call.return_value = Mock(spec=Run, default_dataset_id='dataset-id')
+    client.task.return_value.call.return_value = Mock(spec=Run, default_dataset_id='dataset-id')
     client_class = Mock(return_value=client)
     monkeypatch.setattr(apify_dataset, 'ApifyClient', client_class)
     return client_class
@@ -70,7 +72,7 @@ def test_token_is_read_from_environment(monkeypatch: pytest.MonkeyPatch, client_
 
     ApifyDatasetFromActorCall('actor-id', to_document)
 
-    client_class.assert_called_once_with('env-token')
+    client_class.assert_called_once_with('env-token', headers={'x-apify-integration-platform': 'haystack'})
 
 
 def test_actor_call_runs_actor_and_loads_its_dataset(client: Mock) -> None:
@@ -92,7 +94,7 @@ def test_actor_call_runs_actor_and_loads_its_dataset(client: Mock) -> None:
         run_input={'a': 1, 'b': 2},
         build='beta',
         memory_mbytes=512,
-        timeout_secs=60,
+        run_timeout=timedelta(seconds=60),
     )
     client.dataset.assert_called_once_with('dataset-id')
     assert result == {'documents': [to_document(item) for item in ITEMS]}
@@ -117,20 +119,22 @@ def test_actor_call_without_input_raises(client: Mock) -> None:
     client.actor.assert_not_called()
 
 
-@pytest.mark.parametrize(
-    ('call_result', 'match'),
-    [
-        pytest.param(None, 'No response found', id='no run'),
-        pytest.param({'id': 'run-id'}, 'No dataset found', id='no dataset'),
-    ],
-)
-def test_actor_call_with_unusable_run_raises(client: Mock, call_result: dict | None, match: str) -> None:
-    """A run missing from the response, or without a default dataset, raises a `ValueError`."""
-    client.actor.return_value.call.return_value = call_result
+def test_actor_call_without_run_raises(client: Mock) -> None:
+    """A run missing from the response raises a `ValueError`."""
+    client.actor.return_value.call.return_value = None
     actor = ApifyDatasetFromActorCall('actor-id', to_document, run_input={'a': 1}, apify_api_token='token')
 
-    with pytest.raises(ValueError, match=match):
+    with pytest.raises(ValueError, match='No response found'):
         actor.run()
+
+
+def test_actor_call_without_timeout_passes_no_run_timeout(client: Mock) -> None:
+    """Without `timeout_secs`, the run uses the Actor's default timeout."""
+    actor = ApifyDatasetFromActorCall('actor-id', to_document, run_input={'a': 1}, apify_api_token='token')
+
+    actor.run()
+
+    assert client.actor.return_value.call.call_args.kwargs['run_timeout'] is None
 
 
 def test_task_call_runs_task_and_loads_its_dataset(client: Mock) -> None:
@@ -152,7 +156,7 @@ def test_task_call_runs_task_and_loads_its_dataset(client: Mock) -> None:
         task_input={'a': 1},
         build='beta',
         memory_mbytes=512,
-        timeout_secs=60,
+        run_timeout=timedelta(seconds=60),
     )
     client.dataset.assert_called_once_with('dataset-id')
     assert result == {'documents': [to_document(item) for item in ITEMS]}
@@ -194,11 +198,12 @@ def test_task_call_without_input_raises(client: Mock) -> None:
         pytest.param(lambda: ApifyDatasetFromTaskCall('id', to_document, apify_api_token='token'), id='task call'),
     ],
 )
-def test_user_agent_has_haystack_origin(component: Callable[[], Any]) -> None:
-    """Every component's client sends the Haystack origin in its user agent."""
+def test_client_identifies_haystack_integration(component: Callable[[], Any]) -> None:
+    """Every component's client sends the Haystack integration header and origin in its user agent."""
     instance = component()
 
-    user_agent = instance.client.http_client.httpx_client.headers['user-agent']
+    headers = instance.client.http_client._headers
 
-    assert user_agent.startswith('ApifyClient/')
-    assert user_agent.endswith('; Origin/haystack')
+    assert headers['x-apify-integration-platform'] == 'haystack'
+    assert headers['User-Agent'].startswith('ApifyClient/')
+    assert headers['User-Agent'].endswith('; Origin/haystack')
