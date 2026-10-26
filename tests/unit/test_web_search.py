@@ -64,6 +64,7 @@ def test_run_searches_and_returns_documents_and_links(client: Mock) -> None:
     client.actor.return_value.call.assert_called_once_with(
         run_input={'scrapingTool': 'raw-http', 'query': 'haystack', 'maxResults': 2},
         run_timeout=timedelta(seconds=60),
+        max_total_charge_usd=None,
     )
     client.dataset.assert_called_once_with('dataset-id')
     assert result == {'documents': DOCUMENTS, 'links': ['https://example.com/1', 'https://example.com/2']}
@@ -131,6 +132,7 @@ async def test_run_async_searches_and_returns_documents_and_links(async_client: 
     async_client.actor.return_value.call.assert_awaited_once_with(
         run_input={'query': 'haystack', 'maxResults': 2},
         run_timeout=None,
+        max_total_charge_usd=None,
     )
     assert result == {'documents': DOCUMENTS, 'links': ['https://example.com/1', 'https://example.com/2']}
 
@@ -156,6 +158,7 @@ def test_to_dict() -> None:
             'top_k': 3,
             'search_params': {'scrapingTool': 'raw-http'},
             'timeout_secs': 60,
+            'max_total_charge_usd': None,
             'apify_token': {'type': 'env_var', 'env_vars': ['APIFY_TOKEN', 'APIFY_API_TOKEN'], 'strict': True},
         },
     }

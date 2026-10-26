@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from datetime import timedelta
+from decimal import Decimal
 from typing import TYPE_CHECKING, TypeVar
 
 from apify_client import ApifyClient, ApifyClientAsync
@@ -76,3 +77,8 @@ def _get_dataset_id(run: Run | None, label: str) -> str:
 
 def _to_timedelta(seconds: int | None) -> timedelta | None:
     return None if seconds is None else timedelta(seconds=seconds)
+
+
+def _to_decimal(value: float | None) -> Decimal | None:
+    # `str` keeps the amount as written; `Decimal(0.1)` would carry the binary float error.
+    return None if value is None else Decimal(str(value))

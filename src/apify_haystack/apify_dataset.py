@@ -7,7 +7,7 @@ from haystack import component, default_from_dict, default_to_dict
 from haystack.dataclasses import Document
 from haystack.utils import Secret, deserialize_callable, serialize_callable
 
-from apify_haystack._client import _ApifyClientComponent, _get_dataset_id, _to_timedelta
+from apify_haystack._client import _ApifyClientComponent, _get_dataset_id, _to_decimal, _to_timedelta
 
 if TYPE_CHECKING:
     from collections.abc import Callable
@@ -114,6 +114,7 @@ class ApifyDatasetFromActorCall(_ApifyDatasetComponent):
         build: str | None = None,
         memory_mbytes: int | None = None,
         timeout_secs: int | None = None,
+        max_total_charge_usd: float | None = None,
         apify_token: Secret = Secret.from_env_var(['APIFY_TOKEN', 'APIFY_API_TOKEN']),
     ) -> None:
         """Initialize the Apify Actor loader.
@@ -130,6 +131,8 @@ class ApifyDatasetFromActorCall(_ApifyDatasetComponent):
                 It can be either a build tag or build number.
             memory_mbytes (int, optional): Optional memory limit for the run, in megabytes.
             timeout_secs (int, optional): Optional timeout for the run, in seconds.
+            max_total_charge_usd (float, optional): The maximum amount in USD to charge for the run of a pay-per-event
+                Actor. The platform charges no more than that.
             apify_token (Secret, optional): The API token for the Apify platform. Defaults to the
                 `APIFY_TOKEN` environment variable, or the older `APIFY_API_TOKEN`.
         """
@@ -139,6 +142,7 @@ class ApifyDatasetFromActorCall(_ApifyDatasetComponent):
         self.build = build
         self.memory_mbytes = memory_mbytes
         self.timeout_secs = timeout_secs
+        self.max_total_charge_usd = max_total_charge_usd
         self.apify_token = apify_token
         self.client = None
         self.async_client = None
@@ -171,6 +175,7 @@ class ApifyDatasetFromActorCall(_ApifyDatasetComponent):
             build=self.build,
             memory_mbytes=self.memory_mbytes,
             run_timeout=_to_timedelta(self.timeout_secs),
+            max_total_charge_usd=_to_decimal(self.max_total_charge_usd),
         )
         dataset_id = _get_dataset_id(run, f'Actor {self.actor_id}')
         return {'documents': _load_documents(client, dataset_id, self.dataset_mapping_function)}
@@ -193,6 +198,7 @@ class ApifyDatasetFromActorCall(_ApifyDatasetComponent):
             build=self.build,
             memory_mbytes=self.memory_mbytes,
             run_timeout=_to_timedelta(self.timeout_secs),
+            max_total_charge_usd=_to_decimal(self.max_total_charge_usd),
         )
         dataset_id = _get_dataset_id(run, f'Actor {self.actor_id}')
         documents = await _load_documents_async(client, dataset_id, self.dataset_mapping_function)
@@ -208,6 +214,7 @@ class ApifyDatasetFromActorCall(_ApifyDatasetComponent):
             build=self.build,
             memory_mbytes=self.memory_mbytes,
             timeout_secs=self.timeout_secs,
+            max_total_charge_usd=self.max_total_charge_usd,
             apify_token=self.apify_token,
         )
 
@@ -232,6 +239,7 @@ class ApifyDatasetFromTaskCall(_ApifyDatasetComponent):
         build: str | None = None,
         memory_mbytes: int | None = None,
         timeout_secs: int | None = None,
+        max_total_charge_usd: float | None = None,
         apify_token: Secret = Secret.from_env_var(['APIFY_TOKEN', 'APIFY_API_TOKEN']),
     ) -> None:
         """Initialize the Apify task loader.
@@ -248,6 +256,8 @@ class ApifyDatasetFromTaskCall(_ApifyDatasetComponent):
                 It can be either a build tag or build number.
             memory_mbytes (int, optional): Optional memory limit for the run, in megabytes.
             timeout_secs (int, optional): Optional timeout for the run, in seconds.
+            max_total_charge_usd (float, optional): The maximum amount in USD to charge for the run of a pay-per-event
+                Actor. The platform charges no more than that.
             apify_token (Secret, optional): The API token for the Apify platform. Defaults to the
                 `APIFY_TOKEN` environment variable, or the older `APIFY_API_TOKEN`.
         """
@@ -257,6 +267,7 @@ class ApifyDatasetFromTaskCall(_ApifyDatasetComponent):
         self.build = build
         self.memory_mbytes = memory_mbytes
         self.timeout_secs = timeout_secs
+        self.max_total_charge_usd = max_total_charge_usd
         self.apify_token = apify_token
         self.client = None
         self.async_client = None
@@ -279,6 +290,7 @@ class ApifyDatasetFromTaskCall(_ApifyDatasetComponent):
             build=self.build,
             memory_mbytes=self.memory_mbytes,
             run_timeout=_to_timedelta(self.timeout_secs),
+            max_total_charge_usd=_to_decimal(self.max_total_charge_usd),
         )
         dataset_id = _get_dataset_id(run, f'task {self.task_id}')
         return {'documents': _load_documents(client, dataset_id, self.dataset_mapping_function)}
@@ -301,6 +313,7 @@ class ApifyDatasetFromTaskCall(_ApifyDatasetComponent):
             build=self.build,
             memory_mbytes=self.memory_mbytes,
             run_timeout=_to_timedelta(self.timeout_secs),
+            max_total_charge_usd=_to_decimal(self.max_total_charge_usd),
         )
         dataset_id = _get_dataset_id(run, f'task {self.task_id}')
         documents = await _load_documents_async(client, dataset_id, self.dataset_mapping_function)
@@ -316,6 +329,7 @@ class ApifyDatasetFromTaskCall(_ApifyDatasetComponent):
             build=self.build,
             memory_mbytes=self.memory_mbytes,
             timeout_secs=self.timeout_secs,
+            max_total_charge_usd=self.max_total_charge_usd,
             apify_token=self.apify_token,
         )
 

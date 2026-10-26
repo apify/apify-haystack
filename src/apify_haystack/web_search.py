@@ -6,7 +6,7 @@ from haystack import component, default_from_dict, default_to_dict
 from haystack.dataclasses import Document
 from haystack.utils import Secret
 
-from apify_haystack._client import _ApifyClientComponent, _get_dataset_id, _to_timedelta
+from apify_haystack._client import _ApifyClientComponent, _get_dataset_id, _to_decimal, _to_timedelta
 from apify_haystack.apify_dataset import default_dataset_mapping_function
 
 RAG_WEB_BROWSER_ACTOR_ID = 'apify/rag-web-browser'
@@ -39,6 +39,7 @@ class ApifyWebSearch(_ApifyClientComponent):
         search_params: dict | None = None,
         *,
         timeout_secs: int | None = None,
+        max_total_charge_usd: float | None = None,
         apify_token: Secret = Secret.from_env_var(['APIFY_TOKEN', 'APIFY_API_TOKEN']),
     ) -> None:
         """Initialize the web search component.
@@ -48,6 +49,8 @@ class ApifyWebSearch(_ApifyClientComponent):
             search_params (dict, optional): Additional input for the RAG Web Browser Actor, for example
                 `{'scrapingTool': 'browser-playwright'}`. See the Actor's input schema for the options.
             timeout_secs (int, optional): Optional timeout for the Actor run, in seconds.
+            max_total_charge_usd (float, optional): The maximum amount in USD to charge for the run of a pay-per-event
+                Actor. The platform charges no more than that.
             apify_token (Secret, optional): The API token for the Apify platform. Defaults to the
                 `APIFY_TOKEN` environment variable, or the older `APIFY_API_TOKEN`.
         """
@@ -57,6 +60,7 @@ class ApifyWebSearch(_ApifyClientComponent):
         self.top_k = top_k
         self.search_params = search_params
         self.timeout_secs = timeout_secs
+        self.max_total_charge_usd = max_total_charge_usd
         self.apify_token = apify_token
         self.client = None
         self.async_client = None
@@ -72,6 +76,7 @@ class ApifyWebSearch(_ApifyClientComponent):
         run = client.actor(RAG_WEB_BROWSER_ACTOR_ID).call(
             run_input=self._run_input(query),
             run_timeout=_to_timedelta(self.timeout_secs),
+            max_total_charge_usd=_to_decimal(self.max_total_charge_usd),
         )
         dataset_id = _get_dataset_id(run, f'Actor {RAG_WEB_BROWSER_ACTOR_ID}')
         items = client.dataset(dataset_id).list_items(clean=True).items
@@ -88,6 +93,7 @@ class ApifyWebSearch(_ApifyClientComponent):
         run = await client.actor(RAG_WEB_BROWSER_ACTOR_ID).call(
             run_input=self._run_input(query),
             run_timeout=_to_timedelta(self.timeout_secs),
+            max_total_charge_usd=_to_decimal(self.max_total_charge_usd),
         )
         dataset_id = _get_dataset_id(run, f'Actor {RAG_WEB_BROWSER_ACTOR_ID}')
         items = (await client.dataset(dataset_id).list_items(clean=True)).items
@@ -100,6 +106,7 @@ class ApifyWebSearch(_ApifyClientComponent):
             top_k=self.top_k,
             search_params=self.search_params,
             timeout_secs=self.timeout_secs,
+            max_total_charge_usd=self.max_total_charge_usd,
             apify_token=self.apify_token,
         )
 
