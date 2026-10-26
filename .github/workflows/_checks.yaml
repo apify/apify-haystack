@@ -32,20 +32,20 @@ jobs:
     name: Lint check
     uses: apify/workflows/.github/workflows/python_lint_check.yaml@main
     with:
-      python_versions: '["3.11", "3.12", "3.13"]'
+      python_versions: '["3.11", "3.12", "3.13", "3.14"]'
 
   type_check:
     name: Type check
     uses: apify/workflows/.github/workflows/python_type_check.yaml@main
     with:
-      python_versions: '["3.11", "3.12", "3.13"]'
+      python_versions: '["3.11", "3.12", "3.13", "3.14"]'
 
   unit_tests:
     name: Unit tests
     uses: apify/workflows/.github/workflows/python_unit_tests.yaml@main
     secrets: inherit
     with:
-      python_versions: '["3.11", "3.12", "3.13"]'
+      python_versions: '["3.11", "3.12", "3.13", "3.14"]'
       operating_systems: '["ubuntu-latest", "windows-latest"]'
 
   package_check:
@@ -58,7 +58,7 @@ jobs:
       - name: Set up uv package manager
         uses: astral-sh/setup-uv@07a047e608db84b3d8c06cd9a7c7dcc9c355c18e # v10.3.2
         with:
-          python-version: "3.13"
+          python-version: "3.14"
 
       - name: Build sdist and wheel
         run: uv run poe build
@@ -68,6 +68,6 @@ jobs:
         with:
           package_name: apify_haystack
           dist_dir: dist
-          python_version: "3.13"
+          python_version: "3.14"
           smoke_code: |
             from apify_haystack import ApifyDatasetFromActorCall, ApifyDatasetFromTaskCall, ApifyDatasetLoader
