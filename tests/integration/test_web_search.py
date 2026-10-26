@@ -5,9 +5,9 @@ from haystack import Document
 from apify_haystack import ApifyWebSearch
 
 # With a URL as the query, RAG Web Browser fetches that page instead of searching, which keeps the result fixed.
-QUERY = 'https://example.com'
+QUERY = 'https://crawlee.dev'
 
-# Raw HTTP is the fastest scraping tool, and `example.com` needs no browser.
+# Raw HTTP is the fastest scraping tool, and the Crawlee homepage renders without a browser.
 SEARCH_PARAMS = {'scrapingTool': 'raw-http'}
 
 
@@ -21,7 +21,7 @@ def test_search_returns_page_as_document() -> None:
     [document] = result['documents']
     assert isinstance(document, Document)
     assert document.content is not None
-    assert 'Example Domain' in document.content
+    assert 'Crawlee' in document.content
     assert document.meta['url'].startswith(QUERY)
     assert result['links'] == [document.meta['url']]
 
@@ -36,5 +36,5 @@ async def test_search_run_async_returns_page_as_document() -> None:
     [document] = result['documents']
     assert isinstance(document, Document)
     assert document.content is not None
-    assert 'Example Domain' in document.content
+    assert 'Crawlee' in document.content
     assert result['links'] == [document.meta['url']]
