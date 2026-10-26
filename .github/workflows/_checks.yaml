@@ -40,6 +40,14 @@ jobs:
     with:
       python_versions: '["3.9", "3.10", "3.11", "3.12", "3.13"]'
 
+  unit_tests:
+    name: Unit tests
+    uses: apify/workflows/.github/workflows/python_unit_tests.yaml@main
+    secrets: inherit
+    with:
+      python_versions: '["3.9", "3.10", "3.11", "3.12", "3.13"]'
+      operating_systems: '["ubuntu-latest", "windows-latest"]'
+
   package_check:
     name: Package check
     runs-on: ubuntu-latest

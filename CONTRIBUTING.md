@@ -20,13 +20,17 @@ uv run poe install-dev
 
 ## Code checking
 
-To run all code checks, run:
+To run all code checks (lint, type check, and unit tests), run:
 
 ```sh
 uv run poe check-code
 ```
 
-We use [ruff](https://docs.astral.sh/ruff/) for linting and formatting and [ty](https://docs.astral.sh/ty/) for type checking. Both are configured in `pyproject.toml`, and each has its own task (`lint`, `format`, `type-check`).
+We use [ruff](https://docs.astral.sh/ruff/) for linting and formatting [ty](https://docs.astral.sh/ty/) for type checking, and [pytest](https://docs.pytest.org/) for tests. All of them are configured in `pyproject.toml`, and each has its own task (`lint`, `format`, `type-check`, `unit-tests`).
+
+## Tests
+
+Unit tests (`tests/unit`) are isolated from the Apify API. Run them with `uv run poe unit-tests`, or a single test with `uv run pytest tests/unit/<path>.py::<test_name>`.
 
 ## Documentation
 
