@@ -79,7 +79,7 @@ jobs:
         with:
           package_name: apify_haystack
           dist_dir: dist
-          python_version: "3.13"
+          python_version: "3.14"
           smoke_code: |
             from apify_haystack import ApifyDatasetFromActorCall, ApifyDatasetFromTaskCall, ApifyDatasetLoader
 
