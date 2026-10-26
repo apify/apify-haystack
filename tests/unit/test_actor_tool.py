@@ -118,12 +118,12 @@ def test_tool_name_is_valid_function_name(actor_id: str, expected_name: str) -> 
 
 
 def test_invoke_runs_actor_and_returns_dataset_items(client: Mock) -> None:
-    """`invoke` runs the Actor with the tool arguments as input and returns up to `max_items` dataset items."""
+    """`invoke` runs the Actor with the tool arguments as input and returns up to `dataset_items_limit` items."""
     tool = ApifyActorTool(
         'user/actor',
         parameters=PARAMETERS,
         description='Search.',
-        max_items=5,
+        dataset_items_limit=5,
         build='beta',
         memory_mbytes=512,
         timeout_secs=60,
@@ -172,7 +172,9 @@ async def test_invoke_async_uses_async_client(monkeypatch: pytest.MonkeyPatch, c
 
 def test_to_dict() -> None:
     """`to_dict` stores the resolved schema and the token by its environment variable."""
-    tool = ApifyActorTool('user/actor', name='search', description='Search.', parameters=PARAMETERS, max_items=5)
+    tool = ApifyActorTool(
+        'user/actor', name='search', description='Search.', parameters=PARAMETERS, dataset_items_limit=5
+    )
 
     assert tool.to_dict() == {
         'type': 'apify_haystack.actor_tool.ApifyActorTool',
@@ -181,7 +183,7 @@ def test_to_dict() -> None:
             'name': 'search',
             'description': 'Search.',
             'parameters': PARAMETERS,
-            'max_items': 5,
+            'dataset_items_limit': 5,
             'build': None,
             'memory_mbytes': None,
             'timeout_secs': None,
@@ -193,7 +195,7 @@ def test_to_dict() -> None:
 def test_tool_round_trips_through_haystack_serialization(monkeypatch: pytest.MonkeyPatch, client_class: Mock) -> None:
     """Haystack's tool deserialization restores the tool from `to_dict` without an Apify API request."""
     monkeypatch.setenv('HAYSTACK_DESERIALIZATION_ALLOWLIST', 'apify_haystack')
-    tool = ApifyActorTool('user/actor', description='Search.', parameters=PARAMETERS, max_items=5)
+    tool = ApifyActorTool('user/actor', description='Search.', parameters=PARAMETERS, dataset_items_limit=5)
     data = {'tools': [tool.to_dict()]}
 
     deserialize_tools_or_toolset_inplace(data)
