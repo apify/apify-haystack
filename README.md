@@ -26,16 +26,12 @@ pip install apify-haystack
 You need to have an Apify account and API token to run this example.
 You can start with a free account at [Apify](https://apify.com/) and get your [API token](https://docs.apify.com/platform/integrations/api).
 
-In the example below, specify `apify_api_token` and run the script:
+In the example below, set the `APIFY_API_TOKEN` environment variable and run the script:
 
 ```python
-from dotenv import load_dotenv
 from haystack import Document
 
 from apify_haystack import ApifyDatasetFromActorCall
-
-# Set APIFY_API_TOKEN here or load it from .env file
-apify_api_token = '' or load_dotenv()
 
 actor_id = 'apify/website-content-crawler'
 run_input = {
@@ -63,7 +59,7 @@ for d in dataset:
 
 ### More examples
 
-See other examples in the [examples directory](https://github.com/apify/apify-haystack/blob/master/src/apify_haystack/examples) for more examples, here is a list of few of them
+See other examples in the [examples directory](https://github.com/apify/apify-haystack/tree/main/examples) for more examples, here is a list of few of them
 
 - Load a dataset from Apify and convert it to a Haystack Document
 - Call [Website Content Crawler](https://apify.com/apify/website-content-crawler) and convert the data into the Haystack Documents
