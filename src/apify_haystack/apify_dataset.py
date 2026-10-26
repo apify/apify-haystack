@@ -48,18 +48,18 @@ class ApifyDatasetLoader:
 
         # Add a custom user-agent to the httpx client for attribution purposes
         self.client = ApifyClient()
-        if httpx_client := getattr(self.client.http_client, "httpx_client", None):
-            httpx_client.headers["user-agent"] += f"; {HAYSTACK_ATTRIBUTE_USER_AGENT}"
+        if httpx_client := getattr(self.client.http_client, 'httpx_client', None):
+            httpx_client.headers['user-agent'] += f'; {HAYSTACK_ATTRIBUTE_USER_AGENT}'
 
     @component.output_types(documents=list[Document])
-    def run(self):  # type: ignore[no-untyped-def] # noqa: ANN201
+    def run(self):  # noqa: ANN201
         """Load datasets produced by the `Apify Actors`.
 
         Type-hint note: the output is not type-hinted, otherwise linting complains
         that `run` method is not haystack a component
         """
         dataset_items = self.client.dataset(self.dataset_id).list_items(clean=True).items
-        return {"documents": list(map(self.dataset_mapping_function, dataset_items))}
+        return {'documents': list(map(self.dataset_mapping_function, dataset_items))}
 
 
 @component
@@ -109,19 +109,19 @@ class ApifyDatasetFromActorCall:
         self.memory_mbytes = memory_mbytes
         self.timeout_secs = timeout_secs
 
-        if not (apify_api_token := apify_api_token or os.getenv("APIFY_API_TOKEN")):
+        if not (apify_api_token := apify_api_token or os.getenv('APIFY_API_TOKEN')):
             raise ValueError(
-                "Apify API token not found. Please provide Apify API token when initializing "
-                "ApifyDatasetCall, or set the environment variable APIFY_API_TOKEN."
+                'Apify API token not found. Please provide Apify API token when initializing '
+                'ApifyDatasetCall, or set the environment variable APIFY_API_TOKEN.'
             )
         # Add a custom user-agent to the httpx client for attribution purposes
         self.client = ApifyClient(apify_api_token)
 
-        if httpx_client := getattr(self.client.http_client, "httpx_client", None):
-            httpx_client.headers["user-agent"] += f"; {HAYSTACK_ATTRIBUTE_USER_AGENT}"
+        if httpx_client := getattr(self.client.http_client, 'httpx_client', None):
+            httpx_client.headers['user-agent'] += f'; {HAYSTACK_ATTRIBUTE_USER_AGENT}'
 
     @component.output_types(documents=list[Document])
-    def run(self, run_input: dict | None = None):  # type: ignore[no-untyped-def] # noqa: ANN201
+    def run(self, run_input: dict | None = None):  # noqa: ANN201
         """Run an Actor on the Apify platform and wait for results to be ready.
 
         Args:
@@ -142,7 +142,7 @@ class ApifyDatasetFromActorCall:
         that `run` method is not haystack a component
         """
         if not (run_input := _merge_inputs(run_input, self.run_input)):
-            raise ValueError("Please provide the run_input either in the constructor or in the run method.")
+            raise ValueError('Please provide the run_input either in the constructor or in the run method.')
 
         if not (
             actor_call := self.client.actor(self.actor_id).call(
@@ -152,10 +152,10 @@ class ApifyDatasetFromActorCall:
                 timeout_secs=self.timeout_secs,
             )
         ):
-            raise ValueError(f"No response found in the actor {self.actor_id} call")
+            raise ValueError(f'No response found in the actor {self.actor_id} call')
 
-        if not (dataset_id := actor_call.get("defaultDatasetId")):
-            raise ValueError(f"No dataset found in the actor {self.actor_id} call response.")
+        if not (dataset_id := actor_call.get('defaultDatasetId')):
+            raise ValueError(f'No dataset found in the actor {self.actor_id} call response.')
 
         loader = ApifyDatasetLoader(
             dataset_id=dataset_id,
@@ -206,19 +206,19 @@ class ApifyDatasetFromTaskCall:
         self.memory_mbytes = memory_mbytes
         self.timeout_secs = timeout_secs
 
-        if not (apify_api_token := apify_api_token or os.getenv("APIFY_API_TOKEN")):
+        if not (apify_api_token := apify_api_token or os.getenv('APIFY_API_TOKEN')):
             raise ValueError(
-                "Apify API token not found. Please provide Apify API token when initializing "
-                "ApifyDatasetCall, or set the environment variable APIFY_API_TOKEN."
+                'Apify API token not found. Please provide Apify API token when initializing '
+                'ApifyDatasetCall, or set the environment variable APIFY_API_TOKEN.'
             )
         # Add a custom user-agent to the httpx client for attribution purposes
         self.client = ApifyClient(apify_api_token)
 
-        if httpx_client := getattr(self.client.http_client, "httpx_client", None):
-            httpx_client.headers["user-agent"] += f"; {HAYSTACK_ATTRIBUTE_USER_AGENT}"
+        if httpx_client := getattr(self.client.http_client, 'httpx_client', None):
+            httpx_client.headers['user-agent'] += f'; {HAYSTACK_ATTRIBUTE_USER_AGENT}'
 
     @component.output_types(documents=list[Document])
-    def run(self, task_input: dict | None = None):  # type: ignore[no-untyped-def] # noqa: ANN201
+    def run(self, task_input: dict | None = None):  # noqa: ANN201
         """Run an Actor on the Apify platform and wait for results to be ready.
 
         Args:
@@ -231,7 +231,7 @@ class ApifyDatasetFromTaskCall:
         """
         task_input = task_input or self.task_input
         if not task_input:
-            raise ValueError("Please provide the task_input either in the constructor or in the run method.")
+            raise ValueError('Please provide the task_input either in the constructor or in the run method.')
 
         if not (
             actor_call := self.client.task(self.task_id).call(
@@ -241,10 +241,10 @@ class ApifyDatasetFromTaskCall:
                 timeout_secs=self.timeout_secs,
             )
         ):
-            raise ValueError(f"No response found in the actor {self.task_id} call")
+            raise ValueError(f'No response found in the actor {self.task_id} call')
 
-        if not (dataset_id := actor_call.get("defaultDatasetId")):
-            raise ValueError(f"No dataset found in the actor {self.task_id} call response.")
+        if not (dataset_id := actor_call.get('defaultDatasetId')):
+            raise ValueError(f'No dataset found in the actor {self.task_id} call response.')
 
         loader = ApifyDatasetLoader(
             dataset_id=dataset_id,

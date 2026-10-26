@@ -16,16 +16,16 @@ from haystack import Document
 
 from apify_haystack import ApifyDatasetLoader
 
-dataset_id = "YOUR-DATASET-ID"
+dataset_id = 'YOUR-DATASET-ID'
 
 
 def dataset_mapping_function(dataset_item: dict) -> Document:
-    return Document(content=dataset_item.get("text"), meta={"url": dataset_item.get("url")})
+    return Document(content=dataset_item.get('text'), meta={'url': dataset_item.get('url')})
 
 
 loader = ApifyDatasetLoader(dataset_id=dataset_id, dataset_mapping_function=dataset_mapping_function)
-dataset = loader.run().get("documents")
+dataset = loader.run().get('documents')
 
-print(f"Loaded {len(dataset)} documents from Apify dataset {dataset_id}:")
+print(f'Loaded {len(dataset)} documents from Apify dataset {dataset_id}:')
 for d in dataset:
     print(d)

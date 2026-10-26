@@ -13,10 +13,10 @@ from __future__ import annotations
 
 from utils import get_current_package_version, get_published_package_versions
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     current_version = get_current_package_version()
 
     published_versions = get_published_package_versions()
 
     if current_version in published_versions:
-        raise RuntimeError(f"The current version {current_version} was already released!")
+        raise RuntimeError(f'The current version {current_version} was already released!')
