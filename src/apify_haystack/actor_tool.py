@@ -9,7 +9,7 @@ from haystack.core.serialization import generate_qualified_class_name
 from haystack.tools import Tool
 from haystack.utils import Secret, deserialize_secrets_inplace
 
-from apify_haystack.apify_dataset import _ApifyClientComponent, _create_client, _get_dataset_id, _to_timedelta
+from apify_haystack._client import _ApifyClientComponent, _create_client, _get_dataset_id, _to_timedelta
 
 # OpenAI limits a function name to 64 characters and a description to 1024.
 _MAX_NAME_LENGTH = 64

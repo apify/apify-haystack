@@ -13,7 +13,7 @@ from haystack.tools import deserialize_tools_or_toolset_inplace
 from haystack.tools.errors import ToolInvocationError
 from haystack.utils import Secret
 
-from apify_haystack import ApifyActorTool, actor_tool, apify_dataset
+from apify_haystack import ApifyActorTool, _client, actor_tool
 
 TOKEN = Secret.from_token('token')
 
@@ -46,7 +46,7 @@ def client_class(monkeypatch: pytest.MonkeyPatch) -> Mock:
     client.dataset.return_value.list_items.return_value.items = ITEMS
     client_class = Mock(return_value=client)
     monkeypatch.setattr(actor_tool, 'ApifyClient', client_class)
-    monkeypatch.setattr(apify_dataset, 'ApifyClient', client_class)
+    monkeypatch.setattr(_client, 'ApifyClient', client_class)
     return client_class
 
 
@@ -160,7 +160,7 @@ async def test_invoke_async_uses_async_client(monkeypatch: pytest.MonkeyPatch, c
         return_value=Mock(spec=Run, id='run-id', status='SUCCEEDED', default_dataset_id='d')
     )
     async_client.dataset.return_value.list_items = AsyncMock(return_value=Mock(items=ITEMS))
-    monkeypatch.setattr(apify_dataset, 'ApifyClientAsync', Mock(return_value=async_client))
+    monkeypatch.setattr(_client, 'ApifyClientAsync', Mock(return_value=async_client))
     tool = ApifyActorTool('user/actor', parameters=PARAMETERS, description='Search.', apify_token=TOKEN)
 
     result = await tool.invoke_async(query='apify')

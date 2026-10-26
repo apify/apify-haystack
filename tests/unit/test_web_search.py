@@ -8,7 +8,7 @@ from apify_client._models import Run
 from haystack import Document, Pipeline
 from haystack.utils import Secret
 
-from apify_haystack import ApifyWebSearch, apify_dataset
+from apify_haystack import ApifyWebSearch, _client
 
 TOKEN = Secret.from_token('token')
 
@@ -38,7 +38,7 @@ def client(monkeypatch: pytest.MonkeyPatch) -> Mock:
         spec=Run, id='run-id', status='SUCCEEDED', default_dataset_id='dataset-id'
     )
     client.dataset.return_value.list_items.return_value.items = ITEMS
-    monkeypatch.setattr(apify_dataset, 'ApifyClient', Mock(return_value=client))
+    monkeypatch.setattr(_client, 'ApifyClient', Mock(return_value=client))
     return client
 
 
@@ -50,7 +50,7 @@ def async_client(monkeypatch: pytest.MonkeyPatch) -> Mock:
         return_value=Mock(spec=Run, id='run-id', status='SUCCEEDED', default_dataset_id='dataset-id')
     )
     client.dataset.return_value.list_items = AsyncMock(return_value=Mock(items=ITEMS))
-    monkeypatch.setattr(apify_dataset, 'ApifyClientAsync', Mock(return_value=client))
+    monkeypatch.setattr(_client, 'ApifyClientAsync', Mock(return_value=client))
     return client
 
 

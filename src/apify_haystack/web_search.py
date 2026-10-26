@@ -6,12 +6,8 @@ from haystack import component, default_from_dict, default_to_dict
 from haystack.dataclasses import Document
 from haystack.utils import Secret
 
-from apify_haystack.apify_dataset import (
-    _ApifyClientComponent,
-    _get_dataset_id,
-    _to_timedelta,
-    default_dataset_mapping_function,
-)
+from apify_haystack._client import _ApifyClientComponent, _get_dataset_id, _to_timedelta
+from apify_haystack.apify_dataset import default_dataset_mapping_function
 
 RAG_WEB_BROWSER_ACTOR_ID = 'apify/rag-web-browser'
 
