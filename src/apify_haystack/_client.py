@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING, TypeVar
 
 from apify_client import ApifyClient, ApifyClientAsync
 
-from apify_haystack.constants import HAYSTACK_ATTRIBUTE_USER_AGENT, HAYSTACK_INTEGRATION_PLATFORM
+from apify_haystack._constants import HAYSTACK_ATTRIBUTE_USER_AGENT, HAYSTACK_INTEGRATION_PLATFORM
 
 if TYPE_CHECKING:
     from apify_client._models import Run
