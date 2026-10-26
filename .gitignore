@@ -8,8 +8,6 @@ __pycache__
 .envrc
 .python-version
 
-poetry.toml
-poetry.lock
 
 *.egg-info/
 *.egg
