@@ -1,17 +1,14 @@
 from __future__ import annotations
 
 import re
-from typing import TYPE_CHECKING, Any
+from typing import Any
 
 from apify_client import ApifyClient
 from haystack.core.serialization import generate_qualified_class_name
 from haystack.tools import Tool
 from haystack.utils import Secret, deserialize_secrets_inplace
 
-from apify_haystack.apify_dataset import _ApifyClientComponent, _create_client, _to_timedelta
-
-if TYPE_CHECKING:
-    from apify_client._models import Run
+from apify_haystack.apify_dataset import _ApifyClientComponent, _create_client, _get_dataset_id, _to_timedelta
 
 # OpenAI limits a function name to 64 characters and a description to 1024.
 _MAX_NAME_LENGTH = 64
@@ -128,7 +125,7 @@ class ApifyActorTool(_ApifyClientComponent, Tool):
             memory_mbytes=self.memory_mbytes,
             run_timeout=_to_timedelta(self.timeout_secs),
         )
-        dataset_id = self._check_run(run)
+        dataset_id = _get_dataset_id(run, f'Actor {self.actor_id}')
         return client.dataset(dataset_id).list_items(clean=True, limit=self.max_items).items
 
     async def _run_actor_async(self, **run_input: Any) -> list[dict]:
@@ -139,16 +136,8 @@ class ApifyActorTool(_ApifyClientComponent, Tool):
             memory_mbytes=self.memory_mbytes,
             run_timeout=_to_timedelta(self.timeout_secs),
         )
-        dataset_id = self._check_run(run)
+        dataset_id = _get_dataset_id(run, f'Actor {self.actor_id}')
         return (await client.dataset(dataset_id).list_items(clean=True, limit=self.max_items)).items
-
-    def _check_run(self, run: Run | None) -> str:
-        if run is None:
-            raise ValueError(f'No response found in the Actor {self.actor_id} call')
-        # The tool result goes to the LLM, which can only react to a failed run if it is told about it.
-        if run.status != 'SUCCEEDED':
-            raise RuntimeError(f'The Actor {self.actor_id} run {run.id} finished with status {run.status}.')
-        return run.default_dataset_id
 
 
 def _get_actor_definition(apify_token: Secret, actor_id: str) -> dict[str, Any]:
