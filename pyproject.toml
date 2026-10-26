@@ -156,6 +156,8 @@ build = { cmd = "uv build", help = "Build the package" }
 type-check = { cmd = "uv run ty check", help = "Run the type checker" }
 unit-tests = { cmd = "uv run pytest --numprocesses=${TESTS_CONCURRENCY:-auto} tests/unit", help = "Run unit tests" }
 unit-tests-cov = { cmd = "uv run pytest --numprocesses=${TESTS_CONCURRENCY:-auto} --cov=src/apify_haystack --cov-report=xml:coverage-unit.xml tests/unit", help = "Run unit tests with an XML coverage report" }
+integration-tests = { cmd = "uv run pytest --numprocesses=${TESTS_CONCURRENCY:-auto} tests/integration", help = "Run integration tests against the Apify platform" }
+integration-tests-cov = { cmd = "uv run pytest --numprocesses=${TESTS_CONCURRENCY:-auto} --cov=src/apify_haystack --cov-report=xml:coverage-integration.xml tests/integration", help = "Run integration tests with an XML coverage report" }
 check-code = { sequence = ["lint", "type-check", "unit-tests"], help = "Run lint, type check, and unit tests" }
 
 [tool.poe.tasks.install-dev]
