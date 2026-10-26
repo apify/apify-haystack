@@ -37,11 +37,11 @@ We adhere to the [Google docstring format](https://sphinxcontrib-napoleon.readth
 Publishing new versions to [PyPI](https://pypi.org/project/apify-haystack) is automated through GitHub Actions.
 
 - **Beta releases**: On each commit to the main branch, a new beta release is automatically published. The version number is determined based on the latest release and conventional commits. The beta version suffix is incremented by 1 from the last beta release on PyPI.
-- **Stable releases**: A stable version release may be created by triggering the `release` GitHub Actions workflow. The version number is determined based on the latest release and conventional commits (`auto` release type), or it may be overridden using the `custom` release type.
+- **Stable releases**: A stable version release may be created by triggering the `Stable release` GitHub Actions workflow. The version number is determined based on the latest release and conventional commits (`auto` release type), or it may be overridden using the `custom` release type.
 
 ### Publishing to PyPI manually
 
-1. **Do not do this unless absolutely necessary.** In all conceivable scenarios, you should use the `release` workflow instead.
+1. **Do not do this unless absolutely necessary.** In all conceivable scenarios, you should use the `Stable release` workflow instead.
 2. **Make sure you know what you're doing.**
 3. Update the version number by modifying the `version` field under `project` in `pyproject.toml`:
 
