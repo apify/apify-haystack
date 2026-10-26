@@ -8,6 +8,7 @@ version = "0.1.7"
 description = "Apify-haystack integration"
 authors = [{ name = "Apify Technologies s.r.o.", email = "support@apify.com" }]
 license = "Apache-2.0"
+license-files = ["LICENSE"]
 readme = "README.md"
 requires-python = ">=3.9"
 classifiers = [
