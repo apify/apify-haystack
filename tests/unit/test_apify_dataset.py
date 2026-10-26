@@ -9,7 +9,13 @@ from apify_client._models import Run
 from haystack import Document, Pipeline
 from haystack.utils import Secret
 
-from apify_haystack import ApifyDatasetFromActorCall, ApifyDatasetFromTaskCall, ApifyDatasetLoader, apify_dataset
+from apify_haystack import (
+    ApifyDatasetFromActorCall,
+    ApifyDatasetFromTaskCall,
+    ApifyDatasetLoader,
+    apify_dataset,
+    default_dataset_mapping_function,
+)
 
 if TYPE_CHECKING:
     from collections.abc import Callable
@@ -510,3 +516,71 @@ async def test_actor_call_runs_in_async_pipeline(async_client: Mock, client_clas
     async_client.actor.return_value.call.assert_awaited_once()
     client_class.assert_not_called()
     assert result == {'loader': {'documents': [to_document(item) for item in ITEMS]}}
+
+
+@pytest.mark.parametrize(
+    ('dataset_item', 'expected'),
+    [
+        pytest.param(
+            {
+                'url': 'https://example.com',
+                'metadata': {'title': 'Example', 'description': 'An example page'},
+                'markdown': '# Example',
+                'text': 'Example',
+            },
+            Document(
+                content='# Example',
+                meta={'url': 'https://example.com', 'title': 'Example', 'description': 'An example page'},
+            ),
+            id='website content crawler',
+        ),
+        pytest.param(
+            {'metadata': {'url': 'https://example.com', 'title': 'Example'}, 'text': 'Example'},
+            Document(content='Example', meta={'url': 'https://example.com', 'title': 'Example'}),
+            id='text without markdown',
+        ),
+        pytest.param(
+            {'searchResult': {'url': 'https://example.com', 'title': 'Result', 'description': 'Snippet'}},
+            Document(
+                content='{"searchResult": {"url": "https://example.com", "title": "Result", "description": "Snippet"}}',
+                meta={'url': 'https://example.com', 'title': 'Result', 'description': 'Snippet'},
+            ),
+            id='search result only',
+        ),
+        pytest.param(
+            {'name': 'Cafe', 'rating': 4.5, 'metadata': 'not a dict'},
+            Document(content='{"name": "Cafe", "rating": 4.5, "metadata": "not a dict"}'),
+            id='generic item',
+        ),
+    ],
+)
+def test_default_dataset_mapping_function(dataset_item: dict, expected: Document) -> None:
+    """The default mapping takes Markdown or text with the page details, and falls back to the item as JSON."""
+    assert default_dataset_mapping_function(dataset_item) == expected
+
+
+@pytest.mark.usefixtures('client')
+@pytest.mark.parametrize(
+    'component',
+    [
+        pytest.param(lambda: ApifyDatasetLoader('dataset-id'), id='dataset loader'),
+        pytest.param(lambda: ApifyDatasetFromActorCall('id', run_input={'a': 1}, apify_token=TOKEN), id='actor call'),
+        pytest.param(lambda: ApifyDatasetFromTaskCall('id', task_input={'a': 1}, apify_token=TOKEN), id='task call'),
+    ],
+)
+def test_components_default_to_default_mapping_function(component: Callable[[], Any]) -> None:
+    """Without a mapping function, the components convert items with `default_dataset_mapping_function`."""
+    result = component().run()
+
+    assert result == {'documents': [default_dataset_mapping_function(item) for item in ITEMS]}
+
+
+def test_default_mapping_function_round_trips_through_serialization() -> None:
+    """The default mapping function is stored as `None`, so restoring it needs no allowlisted module."""
+    loader = ApifyDatasetLoader('dataset-id')
+
+    data = loader.to_dict()
+    restored = ApifyDatasetLoader.from_dict(data)
+
+    assert data['init_parameters']['dataset_mapping_function'] is None
+    assert restored.dataset_mapping_function is default_dataset_mapping_function
