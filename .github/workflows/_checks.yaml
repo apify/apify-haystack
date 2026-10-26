@@ -70,4 +70,4 @@ jobs:
           dist_dir: dist
           python_version: "3.14"
           smoke_code: |
-            from apify_haystack import ApifyDatasetFromActorCall, ApifyDatasetFromTaskCall, ApifyDatasetLoader, ApifyWebSearch
+            from apify_haystack import ApifyActorTool, ApifyDatasetFromActorCall, ApifyDatasetFromTaskCall, ApifyDatasetLoader, ApifyWebSearch

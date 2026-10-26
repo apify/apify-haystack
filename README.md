@@ -25,6 +25,7 @@ pip install apify-haystack
 - `ApifyDatasetFromTaskCall` does the same for a saved Actor task.
 - `ApifyDatasetLoader` loads an existing dataset by its ID.
 - `ApifyWebSearch` searches the web with the [RAG Web Browser](https://apify.com/apify/rag-web-browser) Actor and returns the content of the top result pages.
+- `ApifyActorTool` is a tool for Haystack Agents that runs any Actor and returns its dataset items. It takes its parameters from the Actor's input schema.
 
 The dataset components turn dataset items into Haystack `Document` objects with a mapping function you provide. Every component also has `run_async`, which `Pipeline.run_async` uses to run it without blocking the event loop.
 
@@ -82,9 +83,27 @@ for document in result['documents']:
     print(document.meta['url'], document.meta['title'])
 ```
 
+### Give an Agent access to an Actor
+
+`ApifyActorTool` lets a Haystack `Agent` run an Actor. Limit `max_items` to keep the tool output within the model's context window:
+
+```python
+from haystack.components.agents import Agent
+from haystack.components.generators.chat import OpenAIChatGenerator
+from haystack.dataclasses import ChatMessage
+
+from apify_haystack import ApifyActorTool
+
+tool = ApifyActorTool('apify/rag-web-browser', max_items=3)
+agent = Agent(chat_generator=OpenAIChatGenerator(), tools=[tool])
+
+result = agent.run([ChatMessage.from_user('What is new in Haystack 3?')])
+print(result['last_message'].text)
+```
+
 ### Save and load a pipeline
 
-The components support Haystack serialization. The token is saved as the name of its environment variable, never as its value. Haystack 3 only loads classes and functions from trusted modules, so allow `apify_haystack` and the module with your mapping function:
+The components and the tool support Haystack serialization. The token is saved as the name of its environment variable, never as its value. Haystack 3 only loads classes and functions from trusted modules, so allow `apify_haystack` and the module with your mapping function:
 
 ```python
 from haystack import Pipeline
