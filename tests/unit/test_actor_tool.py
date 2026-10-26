@@ -30,6 +30,16 @@ ACTOR_DEFINITION = {
     },
 }
 
+# The tool parameters `ACTOR_DEFINITION` converts to.
+ACTOR_PARAMETERS = {
+    'type': 'object',
+    'properties': {
+        'query': {'type': 'string', 'description': 'Search term', 'examples': ['apify']},
+        'maxResults': {'type': 'integer', 'default': 3, 'minimum': 1, 'maximum': 100},
+    },
+    'required': ['query'],
+}
+
 ITEMS = [{'url': 'https://example.com'}]
 
 
@@ -63,14 +73,7 @@ def test_tool_is_built_from_actor_definition(client: Mock) -> None:
     client.http_client.close.assert_called_once()
     assert tool.name == 'apify_actor_apify_rag-web-browser'
     assert tool.description == 'Searches the web.'
-    assert tool.parameters == {
-        'type': 'object',
-        'properties': {
-            'query': {'type': 'string', 'description': 'Search term', 'examples': ['apify']},
-            'maxResults': {'type': 'integer', 'default': 3, 'minimum': 1, 'maximum': 100},
-        },
-        'required': ['query'],
-    }
+    assert tool.parameters == ACTOR_PARAMETERS
 
 
 def test_explicit_schema_makes_no_api_request(client_class: Mock) -> None:
@@ -81,6 +84,24 @@ def test_explicit_schema_makes_no_api_request(client_class: Mock) -> None:
 
     client_class.assert_not_called()
     assert (tool.name, tool.description, tool.parameters) == ('search', 'Search.', PARAMETERS)
+
+
+@pytest.mark.parametrize(
+    ('explicit', 'expected_description', 'expected_parameters'),
+    [
+        pytest.param({'parameters': PARAMETERS}, 'Searches the web.', PARAMETERS, id='parameters only'),
+        pytest.param({'description': 'Search.'}, 'Search.', ACTOR_PARAMETERS, id='description only'),
+    ],
+)
+def test_missing_schema_part_is_read_from_actor(
+    client: Mock, explicit: dict, expected_description: str, expected_parameters: dict
+) -> None:
+    """When only one of `description` and `parameters` is given, the other one comes from the Actor's build."""
+    tool = ApifyActorTool('user/actor', apify_token=TOKEN, **explicit)
+
+    client.actor.return_value.default_build.return_value.get.assert_called_once()
+    assert tool.description == expected_description
+    assert tool.parameters == expected_parameters
 
 
 def test_actor_without_description_gets_default_description(client: Mock) -> None:
