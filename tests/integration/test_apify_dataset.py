@@ -28,10 +28,10 @@ async function pageFunction({ $, request }) {
 }
 """
 
+# The required `proxyConfiguration` is left out, so the platform fills in its default, Apify Proxy.
 CHEERIO_INPUT = {
     'startUrls': [{'url': 'https://example.com'}],
     'pageFunction': PAGE_FUNCTION,
-    'proxyConfiguration': {'useApifyProxy': False},
 }
 
 EXAMPLE_DOCUMENT = Document(content='Example Domain', meta={'url': 'https://example.com'})
