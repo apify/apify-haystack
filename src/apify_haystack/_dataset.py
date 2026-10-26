@@ -7,7 +7,7 @@ from haystack import component, default_from_dict, default_to_dict
 from haystack.dataclasses import Document
 from haystack.utils import Secret, deserialize_callable, serialize_callable
 
-from apify_haystack._client import _ApifyClientComponent, _get_dataset_id, _to_decimal, _to_timedelta
+from apify_haystack._client import ApifyClientComponent, get_dataset_id, to_decimal, to_timedelta
 
 if TYPE_CHECKING:
     from collections.abc import Callable
@@ -15,7 +15,7 @@ if TYPE_CHECKING:
     from apify_client import ApifyClient, ApifyClientAsync
 
 
-class _ApifyDatasetComponent(_ApifyClientComponent):
+class ApifyDatasetComponent(ApifyClientComponent):
     """Base for the components that convert dataset items to Documents with a mapping function."""
 
     @classmethod
@@ -29,7 +29,7 @@ class _ApifyDatasetComponent(_ApifyClientComponent):
 
 
 @component
-class ApifyDatasetLoader(_ApifyDatasetComponent):
+class ApifyDatasetLoader(ApifyDatasetComponent):
     """Load datasets produced by Apify Actors.
 
     Actors are serverless functions that can be used to scrape, crawl, and extract data from the web.
@@ -48,6 +48,9 @@ class ApifyDatasetLoader(_ApifyDatasetComponent):
             loader = ApifyDatasetLoader(dataset_id=dataset_id, dataset_mapping_function=dataset_mapping_function)
             dataset = loader.run()
     """
+
+    # Serialized pipelines store the class by this public path, so it does not depend on the module layout.
+    __module__ = 'apify_haystack'
 
     def __init__(
         self,
@@ -95,7 +98,7 @@ class ApifyDatasetLoader(_ApifyDatasetComponent):
 
 
 @component
-class ApifyDatasetFromActorCall(_ApifyDatasetComponent):
+class ApifyDatasetFromActorCall(ApifyDatasetComponent):
     """Get an Apify dataset by calling an Apify Actor.
 
     Perform a call of an Apify Actor and load the produced dataset.
@@ -104,6 +107,9 @@ class ApifyDatasetFromActorCall(_ApifyDatasetComponent):
     It needs an Apify API token, read from the `APIFY_TOKEN` environment variable by default, or passed as
     `apify_token`.
     """
+
+    # Serialized pipelines store the class by this public path, so it does not depend on the module layout.
+    __module__ = 'apify_haystack'
 
     def __init__(
         self,
@@ -174,10 +180,10 @@ class ApifyDatasetFromActorCall(_ApifyDatasetComponent):
             run_input=run_input,
             build=self.build,
             memory_mbytes=self.memory_mbytes,
-            run_timeout=_to_timedelta(self.timeout_secs),
-            max_total_charge_usd=_to_decimal(self.max_total_charge_usd),
+            run_timeout=to_timedelta(self.timeout_secs),
+            max_total_charge_usd=to_decimal(self.max_total_charge_usd),
         )
-        dataset_id = _get_dataset_id(run, f'Actor {self.actor_id}')
+        dataset_id = get_dataset_id(run, f'Actor {self.actor_id}')
         return {'documents': _load_documents(client, dataset_id, self.dataset_mapping_function)}
 
     @component.output_types(documents=list[Document])
@@ -197,10 +203,10 @@ class ApifyDatasetFromActorCall(_ApifyDatasetComponent):
             run_input=run_input,
             build=self.build,
             memory_mbytes=self.memory_mbytes,
-            run_timeout=_to_timedelta(self.timeout_secs),
-            max_total_charge_usd=_to_decimal(self.max_total_charge_usd),
+            run_timeout=to_timedelta(self.timeout_secs),
+            max_total_charge_usd=to_decimal(self.max_total_charge_usd),
         )
-        dataset_id = _get_dataset_id(run, f'Actor {self.actor_id}')
+        dataset_id = get_dataset_id(run, f'Actor {self.actor_id}')
         documents = await _load_documents_async(client, dataset_id, self.dataset_mapping_function)
         return {'documents': documents}
 
@@ -220,7 +226,7 @@ class ApifyDatasetFromActorCall(_ApifyDatasetComponent):
 
 
 @component
-class ApifyDatasetFromTaskCall(_ApifyDatasetComponent):
+class ApifyDatasetFromTaskCall(ApifyDatasetComponent):
     """Get an Apify dataset by calling an Apify task.
 
     Perform a call of an Apify task and load the produced dataset.
@@ -229,6 +235,9 @@ class ApifyDatasetFromTaskCall(_ApifyDatasetComponent):
     It needs an Apify API token, read from the `APIFY_TOKEN` environment variable by default, or passed as
     `apify_token`.
     """
+
+    # Serialized pipelines store the class by this public path, so it does not depend on the module layout.
+    __module__ = 'apify_haystack'
 
     def __init__(
         self,
@@ -289,10 +298,10 @@ class ApifyDatasetFromTaskCall(_ApifyDatasetComponent):
             task_input=task_input,
             build=self.build,
             memory_mbytes=self.memory_mbytes,
-            run_timeout=_to_timedelta(self.timeout_secs),
-            max_total_charge_usd=_to_decimal(self.max_total_charge_usd),
+            run_timeout=to_timedelta(self.timeout_secs),
+            max_total_charge_usd=to_decimal(self.max_total_charge_usd),
         )
-        dataset_id = _get_dataset_id(run, f'task {self.task_id}')
+        dataset_id = get_dataset_id(run, f'task {self.task_id}')
         return {'documents': _load_documents(client, dataset_id, self.dataset_mapping_function)}
 
     @component.output_types(documents=list[Document])
@@ -312,10 +321,10 @@ class ApifyDatasetFromTaskCall(_ApifyDatasetComponent):
             task_input=task_input,
             build=self.build,
             memory_mbytes=self.memory_mbytes,
-            run_timeout=_to_timedelta(self.timeout_secs),
-            max_total_charge_usd=_to_decimal(self.max_total_charge_usd),
+            run_timeout=to_timedelta(self.timeout_secs),
+            max_total_charge_usd=to_decimal(self.max_total_charge_usd),
         )
-        dataset_id = _get_dataset_id(run, f'task {self.task_id}')
+        dataset_id = get_dataset_id(run, f'task {self.task_id}')
         documents = await _load_documents_async(client, dataset_id, self.dataset_mapping_function)
         return {'documents': documents}
 

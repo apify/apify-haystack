@@ -382,7 +382,7 @@ def test_actor_call_to_dict() -> None:
     data = actor.to_dict()
 
     assert data == {
-        'type': 'apify_haystack.apify_dataset.ApifyDatasetFromActorCall',
+        'type': 'apify_haystack.ApifyDatasetFromActorCall',
         'init_parameters': {
             'actor_id': 'actor-id',
             'dataset_mapping_function': f'{__name__}.to_document',

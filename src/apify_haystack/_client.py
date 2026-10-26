@@ -15,7 +15,7 @@ if TYPE_CHECKING:
 _ClientT = TypeVar('_ClientT', ApifyClient, ApifyClientAsync)
 
 
-class _ApifyClientComponent:
+class ApifyClientComponent:
     """Base for the components that call the Apify API.
 
     The sync client lives between `warm_up` and `close`, the async one between `warm_up_async` and `close_async`.
@@ -47,16 +47,16 @@ class _ApifyClientComponent:
 
     def _get_client(self) -> ApifyClient:
         if self.client is None:
-            self.client = _create_client(ApifyClient, self.apify_token.resolve_value())
+            self.client = create_client(ApifyClient, self.apify_token.resolve_value())
         return self.client
 
     def _get_async_client(self) -> ApifyClientAsync:
         if self.async_client is None:
-            self.async_client = _create_client(ApifyClientAsync, self.apify_token.resolve_value())
+            self.async_client = create_client(ApifyClientAsync, self.apify_token.resolve_value())
         return self.async_client
 
 
-def _create_client(client_class: type[_ClientT], token: str | None) -> _ClientT:
+def create_client(client_class: type[_ClientT], token: str | None) -> _ClientT:
     """Create an Apify client that identifies its requests as coming from this integration."""
     client = client_class(token, headers={'x-apify-integration-platform': HAYSTACK_INTEGRATION_PLATFORM})
 
@@ -66,7 +66,7 @@ def _create_client(client_class: type[_ClientT], token: str | None) -> _ClientT:
     return client
 
 
-def _get_dataset_id(run: Run | None, label: str) -> str:
+def get_dataset_id(run: Run | None, label: str) -> str:
     """Return the default dataset of a finished run, raising unless the run succeeded."""
     if run is None:
         raise ValueError(f'No response found in the {label} call')
@@ -75,10 +75,10 @@ def _get_dataset_id(run: Run | None, label: str) -> str:
     return run.default_dataset_id
 
 
-def _to_timedelta(seconds: int | None) -> timedelta | None:
+def to_timedelta(seconds: int | None) -> timedelta | None:
     return None if seconds is None else timedelta(seconds=seconds)
 
 
-def _to_decimal(value: float | None) -> Decimal | None:
+def to_decimal(value: float | None) -> Decimal | None:
     # `str` keeps the amount as written; `Decimal(0.1)` would carry the binary float error.
     return None if value is None else Decimal(str(value))

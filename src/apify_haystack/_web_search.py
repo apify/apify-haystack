@@ -6,8 +6,8 @@ from haystack import component, default_from_dict, default_to_dict
 from haystack.dataclasses import Document
 from haystack.utils import Secret
 
-from apify_haystack._client import _ApifyClientComponent, _get_dataset_id, _to_decimal, _to_timedelta
-from apify_haystack.apify_dataset import default_dataset_mapping_function
+from apify_haystack._client import ApifyClientComponent, get_dataset_id, to_decimal, to_timedelta
+from apify_haystack._dataset import default_dataset_mapping_function
 
 RAG_WEB_BROWSER_ACTOR_ID = 'apify/rag-web-browser'
 
@@ -16,7 +16,7 @@ _MAX_TOP_K = 100
 
 
 @component
-class ApifyWebSearch(_ApifyClientComponent):
+class ApifyWebSearch(ApifyClientComponent):
     """Search the web with the Apify RAG Web Browser Actor and return the result pages as Documents.
 
     The Actor searches Google, scrapes the top results, and returns their content as Markdown. Each result becomes
@@ -32,6 +32,9 @@ class ApifyWebSearch(_ApifyClientComponent):
             result = search.run(query='What is Haystack?')
             documents, links = result['documents'], result['links']
     """
+
+    # Serialized pipelines store the class by this public path, so it does not depend on the module layout.
+    __module__ = 'apify_haystack'
 
     def __init__(
         self,
@@ -75,10 +78,10 @@ class ApifyWebSearch(_ApifyClientComponent):
         client = self._get_client()
         run = client.actor(RAG_WEB_BROWSER_ACTOR_ID).call(
             run_input=self._run_input(query),
-            run_timeout=_to_timedelta(self.timeout_secs),
-            max_total_charge_usd=_to_decimal(self.max_total_charge_usd),
+            run_timeout=to_timedelta(self.timeout_secs),
+            max_total_charge_usd=to_decimal(self.max_total_charge_usd),
         )
-        dataset_id = _get_dataset_id(run, f'Actor {RAG_WEB_BROWSER_ACTOR_ID}')
+        dataset_id = get_dataset_id(run, f'Actor {RAG_WEB_BROWSER_ACTOR_ID}')
         items = client.dataset(dataset_id).list_items(clean=True).items
         return _to_output(items)
 
@@ -92,10 +95,10 @@ class ApifyWebSearch(_ApifyClientComponent):
         client = self._get_async_client()
         run = await client.actor(RAG_WEB_BROWSER_ACTOR_ID).call(
             run_input=self._run_input(query),
-            run_timeout=_to_timedelta(self.timeout_secs),
-            max_total_charge_usd=_to_decimal(self.max_total_charge_usd),
+            run_timeout=to_timedelta(self.timeout_secs),
+            max_total_charge_usd=to_decimal(self.max_total_charge_usd),
         )
-        dataset_id = _get_dataset_id(run, f'Actor {RAG_WEB_BROWSER_ACTOR_ID}')
+        dataset_id = get_dataset_id(run, f'Actor {RAG_WEB_BROWSER_ACTOR_ID}')
         items = (await client.dataset(dataset_id).list_items(clean=True)).items
         return _to_output(items)
 
