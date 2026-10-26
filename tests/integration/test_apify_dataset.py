@@ -36,6 +36,16 @@ CHEERIO_INPUT = {
 
 EXPECTED_DOCUMENT = Document(content='Scraped by apify-haystack tests', meta={'url': 'https://crawlee.dev'})
 
+# Website Content Crawler is the usual Actor for RAG. Its Cheerio crawler with one page keeps the run short.
+WEBSITE_CONTENT_CRAWLER = 'apify/website-content-crawler'
+
+WEBSITE_CONTENT_CRAWLER_INPUT = {
+    'startUrls': [{'url': 'https://crawlee.dev'}],
+    'crawlerType': 'cheerio',
+    'maxCrawlPages': 1,
+    'useSitemaps': False,
+}
+
 
 def to_document(item: dict) -> Document:
     return Document(content=item['markdown'], meta={'url': item['url']})
@@ -113,6 +123,23 @@ async def test_actor_call_run_async_loads_run_dataset() -> None:
     await actor.close_async()
 
     assert result == {'documents': [EXPECTED_DOCUMENT]}
+
+
+def test_actor_call_maps_website_content_crawler_output() -> None:
+    """The default mapping function turns a Website Content Crawler page into a Markdown document with its details."""
+    actor = ApifyDatasetFromActorCall(
+        WEBSITE_CONTENT_CRAWLER, run_input=WEBSITE_CONTENT_CRAWLER_INPUT, memory_mbytes=1024
+    )
+
+    result = actor.run()
+    actor.close()
+
+    [document] = result['documents']
+    assert isinstance(document, Document)
+    assert document.content is not None
+    assert 'Crawlee' in document.content
+    assert document.meta['url'].startswith('https://crawlee.dev')
+    assert 'Crawlee' in document.meta['title']
 
 
 def test_actor_call_timed_out_run_raises() -> None:
