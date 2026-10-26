@@ -54,7 +54,7 @@ wheels = [
 
 [[package]]
 name = "apify-haystack"
-version = "1.7.1"
+version = "0.1.7"
 source = { editable = "." }
 dependencies = [
     { name = "apify-client" },
