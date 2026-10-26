@@ -80,21 +80,35 @@ def test_loader_maps_dataset_items_to_documents(client: Mock) -> None:
     ],
 )
 def test_missing_token_raises(monkeypatch: pytest.MonkeyPatch, component_class: type) -> None:
-    """Without a token argument or `APIFY_API_TOKEN`, `warm_up` raises a `ValueError`."""
+    """Without a token argument, `APIFY_TOKEN`, or `APIFY_API_TOKEN`, `warm_up` raises a `ValueError`."""
+    monkeypatch.delenv('APIFY_TOKEN', raising=False)
     monkeypatch.delenv('APIFY_API_TOKEN', raising=False)
     instance = component_class('id', to_document)
 
-    with pytest.raises(ValueError, match='APIFY_API_TOKEN'):
+    with pytest.raises(ValueError, match='APIFY_TOKEN'):
         instance.warm_up()
 
 
-def test_token_is_read_from_environment(monkeypatch: pytest.MonkeyPatch, client_class: Mock) -> None:
-    """Without a token argument, the client gets the token from `APIFY_API_TOKEN`."""
-    monkeypatch.setenv('APIFY_API_TOKEN', 'env-token')
+@pytest.mark.parametrize(
+    ('environment', 'expected_token'),
+    [
+        pytest.param({'APIFY_TOKEN': 'new-token'}, 'new-token', id='APIFY_TOKEN'),
+        pytest.param({'APIFY_API_TOKEN': 'old-token'}, 'old-token', id='APIFY_API_TOKEN'),
+        pytest.param({'APIFY_TOKEN': 'new-token', 'APIFY_API_TOKEN': 'old-token'}, 'new-token', id='both'),
+    ],
+)
+def test_token_is_read_from_environment(
+    monkeypatch: pytest.MonkeyPatch, client_class: Mock, environment: dict[str, str], expected_token: str
+) -> None:
+    """Without a token argument, the client reads `APIFY_TOKEN`, falling back to the older `APIFY_API_TOKEN`."""
+    monkeypatch.delenv('APIFY_TOKEN', raising=False)
+    monkeypatch.delenv('APIFY_API_TOKEN', raising=False)
+    for name, value in environment.items():
+        monkeypatch.setenv(name, value)
 
     ApifyDatasetFromActorCall('actor-id', to_document).warm_up()
 
-    client_class.assert_called_once_with('env-token', headers={'x-apify-integration-platform': 'haystack'})
+    client_class.assert_called_once_with(expected_token, headers={'x-apify-integration-platform': 'haystack'})
 
 
 def test_actor_call_runs_actor_and_loads_its_dataset(client: Mock) -> None:
@@ -106,7 +120,7 @@ def test_actor_call_runs_actor_and_loads_its_dataset(client: Mock) -> None:
         build='beta',
         memory_mbytes=512,
         timeout_secs=60,
-        apify_api_token=TOKEN,
+        apify_token=TOKEN,
     )
 
     result = actor.run(run_input={'b': 2})
@@ -124,7 +138,7 @@ def test_actor_call_runs_actor_and_loads_its_dataset(client: Mock) -> None:
 
 def test_actor_call_run_input_overrides_constructor_input(client: Mock) -> None:
     """Keys passed to `run` override the same keys from the constructor input."""
-    actor = ApifyDatasetFromActorCall('actor-id', to_document, run_input={'a': 1, 'b': 1}, apify_api_token=TOKEN)
+    actor = ApifyDatasetFromActorCall('actor-id', to_document, run_input={'a': 1, 'b': 1}, apify_token=TOKEN)
 
     actor.run(run_input={'b': 2})
 
@@ -133,7 +147,7 @@ def test_actor_call_run_input_overrides_constructor_input(client: Mock) -> None:
 
 def test_actor_call_without_input_raises(client: Mock) -> None:
     """Running an Actor without input in either the constructor or `run` raises a `ValueError`."""
-    actor = ApifyDatasetFromActorCall('actor-id', to_document, apify_api_token=TOKEN)
+    actor = ApifyDatasetFromActorCall('actor-id', to_document, apify_token=TOKEN)
 
     with pytest.raises(ValueError, match='Please provide the run_input'):
         actor.run()
@@ -144,7 +158,7 @@ def test_actor_call_without_input_raises(client: Mock) -> None:
 def test_actor_call_without_run_raises(client: Mock) -> None:
     """A run missing from the response raises a `ValueError`."""
     client.actor.return_value.call.return_value = None
-    actor = ApifyDatasetFromActorCall('actor-id', to_document, run_input={'a': 1}, apify_api_token=TOKEN)
+    actor = ApifyDatasetFromActorCall('actor-id', to_document, run_input={'a': 1}, apify_token=TOKEN)
 
     with pytest.raises(ValueError, match='No response found'):
         actor.run()
@@ -152,7 +166,7 @@ def test_actor_call_without_run_raises(client: Mock) -> None:
 
 def test_actor_call_without_timeout_passes_no_run_timeout(client: Mock) -> None:
     """Without `timeout_secs`, the run uses the Actor's default timeout."""
-    actor = ApifyDatasetFromActorCall('actor-id', to_document, run_input={'a': 1}, apify_api_token=TOKEN)
+    actor = ApifyDatasetFromActorCall('actor-id', to_document, run_input={'a': 1}, apify_token=TOKEN)
 
     actor.run()
 
@@ -168,7 +182,7 @@ def test_task_call_runs_task_and_loads_its_dataset(client: Mock) -> None:
         build='beta',
         memory_mbytes=512,
         timeout_secs=60,
-        apify_api_token=TOKEN,
+        apify_token=TOKEN,
     )
 
     result = task.run()
@@ -195,7 +209,7 @@ def test_task_call_uses_run_input(
     client: Mock, constructor_input: dict | None, run_input: dict, expected_input: dict
 ) -> None:
     """Input passed to `run` is merged into the constructor input and sent to the task."""
-    task = ApifyDatasetFromTaskCall('task-id', to_document, task_input=constructor_input, apify_api_token=TOKEN)
+    task = ApifyDatasetFromTaskCall('task-id', to_document, task_input=constructor_input, apify_token=TOKEN)
 
     task.run(task_input=run_input)
 
@@ -205,7 +219,7 @@ def test_task_call_uses_run_input(
 def test_task_call_without_run_raises(client: Mock) -> None:
     """A task run missing from the response raises a `ValueError`."""
     client.task.return_value.call.return_value = None
-    task = ApifyDatasetFromTaskCall('task-id', to_document, task_input={'a': 1}, apify_api_token=TOKEN)
+    task = ApifyDatasetFromTaskCall('task-id', to_document, task_input={'a': 1}, apify_token=TOKEN)
 
     with pytest.raises(ValueError, match='No response found'):
         task.run()
@@ -213,7 +227,7 @@ def test_task_call_without_run_raises(client: Mock) -> None:
 
 def test_task_call_without_input_raises(client: Mock) -> None:
     """Running a task without input in either the constructor or `run` raises a `ValueError`."""
-    task = ApifyDatasetFromTaskCall('task-id', to_document, apify_api_token=TOKEN)
+    task = ApifyDatasetFromTaskCall('task-id', to_document, apify_token=TOKEN)
 
     with pytest.raises(ValueError, match='Please provide the task_input'):
         task.run()
@@ -225,8 +239,8 @@ def test_task_call_without_input_raises(client: Mock) -> None:
     'component',
     [
         pytest.param(lambda: ApifyDatasetLoader('dataset-id', to_document), id='dataset loader'),
-        pytest.param(lambda: ApifyDatasetFromActorCall('id', to_document, apify_api_token=TOKEN), id='actor call'),
-        pytest.param(lambda: ApifyDatasetFromTaskCall('id', to_document, apify_api_token=TOKEN), id='task call'),
+        pytest.param(lambda: ApifyDatasetFromActorCall('id', to_document, apify_token=TOKEN), id='actor call'),
+        pytest.param(lambda: ApifyDatasetFromTaskCall('id', to_document, apify_token=TOKEN), id='task call'),
     ],
 )
 def test_client_identifies_haystack_integration(component: Callable[[], Any]) -> None:
@@ -256,7 +270,7 @@ async def test_async_client_identifies_haystack_integration() -> None:
 def test_actor_call_runs_in_pipeline(client: Mock) -> None:
     """The component runs inside a Haystack `Pipeline` and takes `run_input` as a pipeline input."""
     pipeline = Pipeline()
-    pipeline.add_component('loader', ApifyDatasetFromActorCall('actor-id', to_document, apify_api_token=TOKEN))
+    pipeline.add_component('loader', ApifyDatasetFromActorCall('actor-id', to_document, apify_token=TOKEN))
 
     result = pipeline.run({'loader': {'run_input': {'a': 1}}})
 
@@ -290,7 +304,8 @@ def test_close_releases_client(client_class: Mock, client: Mock) -> None:
 
 
 def test_loader_without_token_uses_anonymous_client(monkeypatch: pytest.MonkeyPatch, client_class: Mock) -> None:
-    """Without a token argument or `APIFY_API_TOKEN`, the loader creates a client without a token."""
+    """Without a token argument or a token environment variable, the loader creates a client without a token."""
+    monkeypatch.delenv('APIFY_TOKEN', raising=False)
     monkeypatch.delenv('APIFY_API_TOKEN', raising=False)
 
     ApifyDatasetLoader('dataset-id', to_document).warm_up()
@@ -313,7 +328,7 @@ def test_actor_call_to_dict() -> None:
             'build': 'beta',
             'memory_mbytes': None,
             'timeout_secs': 60,
-            'apify_api_token': {'type': 'env_var', 'env_vars': ['APIFY_API_TOKEN'], 'strict': True},
+            'apify_token': {'type': 'env_var', 'env_vars': ['APIFY_TOKEN', 'APIFY_API_TOKEN'], 'strict': True},
         },
     }
 
@@ -338,7 +353,7 @@ def test_from_dict_restores_component(monkeypatch: pytest.MonkeyPatch, component
 
     assert restored.to_dict() == component.to_dict()
     assert restored.dataset_mapping_function is to_document
-    assert isinstance(restored.apify_api_token, Secret)
+    assert isinstance(restored.apify_token, Secret)
 
 
 def test_pipeline_round_trips_through_yaml() -> None:
@@ -365,7 +380,7 @@ async def test_loader_run_async_maps_dataset_items_to_documents(async_client: Mo
 async def test_actor_call_run_async_runs_actor_and_loads_its_dataset(async_client: Mock) -> None:
     """`run_async` calls the Actor with the merged input and run options, then loads its default dataset."""
     actor = ApifyDatasetFromActorCall(
-        'actor-id', to_document, run_input={'a': 1, 'b': 1}, build='beta', timeout_secs=60, apify_api_token=TOKEN
+        'actor-id', to_document, run_input={'a': 1, 'b': 1}, build='beta', timeout_secs=60, apify_token=TOKEN
     )
 
     result = await actor.run_async(run_input={'b': 2})
@@ -382,9 +397,7 @@ async def test_actor_call_run_async_runs_actor_and_loads_its_dataset(async_clien
 
 async def test_task_call_run_async_runs_task_and_loads_its_dataset(async_client: Mock) -> None:
     """`run_async` calls the task with the merged input and run options, then loads its default dataset."""
-    task = ApifyDatasetFromTaskCall(
-        'task-id', to_document, task_input={'a': 1}, memory_mbytes=512, apify_api_token=TOKEN
-    )
+    task = ApifyDatasetFromTaskCall('task-id', to_document, task_input={'a': 1}, memory_mbytes=512, apify_token=TOKEN)
 
     result = await task.run_async(task_input={'b': 2})
 
@@ -400,8 +413,8 @@ async def test_task_call_run_async_runs_task_and_loads_its_dataset(async_client:
 @pytest.mark.parametrize(
     ('component', 'match'),
     [
-        pytest.param(ApifyDatasetFromActorCall('id', to_document, apify_api_token=TOKEN), 'run_input', id='actor call'),
-        pytest.param(ApifyDatasetFromTaskCall('id', to_document, apify_api_token=TOKEN), 'task_input', id='task call'),
+        pytest.param(ApifyDatasetFromActorCall('id', to_document, apify_token=TOKEN), 'run_input', id='actor call'),
+        pytest.param(ApifyDatasetFromTaskCall('id', to_document, apify_token=TOKEN), 'task_input', id='task call'),
     ],
 )
 async def test_run_async_without_input_raises(async_client: Mock, component: Any, match: str) -> None:
@@ -416,7 +429,7 @@ async def test_run_async_without_input_raises(async_client: Mock, component: Any
 async def test_run_async_without_run_raises(async_client: Mock) -> None:
     """A run missing from the async response raises a `ValueError`."""
     async_client.actor.return_value.call.return_value = None
-    actor = ApifyDatasetFromActorCall('actor-id', to_document, run_input={'a': 1}, apify_api_token=TOKEN)
+    actor = ApifyDatasetFromActorCall('actor-id', to_document, run_input={'a': 1}, apify_token=TOKEN)
 
     with pytest.raises(ValueError, match='No response found'):
         await actor.run_async()
@@ -438,7 +451,7 @@ async def test_close_async_releases_async_client(async_client_class: Mock, async
 async def test_actor_call_runs_in_async_pipeline(async_client: Mock, client_class: Mock) -> None:
     """`Pipeline.run_async` runs the component through its `run_async` with the async client."""
     pipeline = Pipeline()
-    pipeline.add_component('loader', ApifyDatasetFromActorCall('actor-id', to_document, apify_api_token=TOKEN))
+    pipeline.add_component('loader', ApifyDatasetFromActorCall('actor-id', to_document, apify_token=TOKEN))
 
     result = await pipeline.run_async({'loader': {'run_input': {'a': 1}}})
 

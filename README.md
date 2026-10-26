@@ -29,7 +29,7 @@ pip install apify-haystack
 
 The dataset components turn dataset items into Haystack `Document` objects with a mapping function you provide. Every component also has `run_async`, which `Pipeline.run_async` uses to run it without blocking the event loop.
 
-The components read your Apify API token from the `APIFY_API_TOKEN` environment variable. To pass the token differently, use a Haystack `Secret`, for example `apify_api_token=Secret.from_env_var('MY_APIFY_TOKEN')`.
+The components read your Apify API token from the `APIFY_TOKEN` environment variable, or from `APIFY_API_TOKEN` if `APIFY_TOKEN` isn't set. To pass the token differently, use a Haystack `Secret`, for example `apify_token=Secret.from_env_var('MY_APIFY_TOKEN')`.
 
 ## Examples
 
@@ -38,7 +38,7 @@ The components read your Apify API token from the `APIFY_API_TOKEN` environment 
 You need an Apify account and API token to run this example.
 You can start with a free account at [Apify](https://apify.com/) and get your [API token](https://docs.apify.com/platform/integrations/api).
 
-In the example below, set the `APIFY_API_TOKEN` environment variable and run the script:
+In the example below, set the `APIFY_TOKEN` environment variable and run the script:
 
 ```python
 from haystack import Document
