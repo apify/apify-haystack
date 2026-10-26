@@ -9,9 +9,11 @@ URL = "https://www.instagram.com/p/C_a9jcRuJZZ/"  # @tiffintech on How to easily
 Expected output:
 ......
 Overall, the Instagram post seems to be generating positive energy and high engagement. The comments are filled with
-emojis like 😍, 😂, ❤️, 🙏🏿, and 🙌 which show excitement and enthusiasm .....
+emojis which show excitement and enthusiasm .....
 .... Overall, the engagement patterns suggest that the post is vibrating with high energy and positivity.
 """
+
+from __future__ import annotations
 
 import os
 
@@ -42,7 +44,7 @@ document_loader = ApifyDatasetFromActorCall(
 prompt = """
 Analyze these Instagram comments to determine if the post is generating positive energy, excitement,
 or high engagement. Focus on sentiment, emotional tone, and engagement patterns to conclude if
-the post is 'vibrating' with high energy. Be concise."
+the post is 'vibrating' with high energy. Be concise.
 
 Context:
 {% for document in documents %}

@@ -12,6 +12,8 @@ Haystack is an open-source framework fo...', meta: {'url': 'https://docs.haystac
 .....
 """
 
+from __future__ import annotations
+
 from haystack import Document
 
 from apify_haystack import ApifyDatasetLoader
