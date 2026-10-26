@@ -120,7 +120,7 @@ class ApifyDatasetFromActorCall:
         if httpx_client := getattr(self.client.http_client, "httpx_client", None):
             httpx_client.headers["user-agent"] += f"; {HAYSTACK_ATTRIBUTE_USER_AGENT}"
 
-    @component.output_types(documents=list[Document])  # type: ignore[misc]
+    @component.output_types(documents=list[Document])
     def run(self, run_input: dict | None = None):  # type: ignore[no-untyped-def] # noqa: ANN201
         """Run an Actor on the Apify platform and wait for results to be ready.
 
@@ -217,7 +217,7 @@ class ApifyDatasetFromTaskCall:
         if httpx_client := getattr(self.client.http_client, "httpx_client", None):
             httpx_client.headers["user-agent"] += f"; {HAYSTACK_ATTRIBUTE_USER_AGENT}"
 
-    @component.output_types(documents=list[Document])  # type: ignore[misc]
+    @component.output_types(documents=list[Document])
     def run(self, task_input: dict | None = None):  # type: ignore[no-untyped-def] # noqa: ANN201
         """Run an Actor on the Apify platform and wait for results to be ready.
 

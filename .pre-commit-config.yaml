@@ -1,14 +1,14 @@
 repos:
   - repo: local
     hooks:
-      - id: lint
-        name: Linting
-        entry: make lint
+      - id: lint-check
+        name: Lint check
+        entry: uv run poe lint
         language: system
         pass_filenames: false
 
       - id: type-check
-        name: Type checking
-        entry: make type-check
+        name: Type check
+        entry: uv run poe type-check
         language: system
         pass_filenames: false
