@@ -153,7 +153,7 @@ def test_to_dict() -> None:
     search = ApifyWebSearch(top_k=3, search_params={'scrapingTool': 'raw-http'}, timeout_secs=60)
 
     assert search.to_dict() == {
-        'type': 'apify_haystack.web_search.ApifyWebSearch',
+        'type': 'apify_haystack.ApifyWebSearch',
         'init_parameters': {
             'top_k': 3,
             'search_params': {'scrapingTool': 'raw-http'},

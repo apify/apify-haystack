@@ -10,11 +10,11 @@ from haystack.tools import Tool
 from haystack.utils import Secret, deserialize_secrets_inplace
 
 from apify_haystack._client import (
-    _ApifyClientComponent,
-    _create_client,
-    _get_dataset_id,
-    _to_decimal,
-    _to_timedelta,
+    ApifyClientComponent,
+    create_client,
+    get_dataset_id,
+    to_decimal,
+    to_timedelta,
 )
 
 # OpenAI limits a function name to 64 characters and a description to 1024.
@@ -30,15 +30,16 @@ UNTRUSTED_CONTENT_END = '<<<END_EXTERNAL_UNTRUSTED_CONTENT>>>'
 _PROPERTY_SCHEMA_KEYS = ('type', 'description', 'enum', 'default', 'items', 'minimum', 'maximum')
 
 
-class ApifyActorTool(_ApifyClientComponent, Tool):
+class ApifyActorTool(ApifyClientComponent, Tool):
     """A Haystack tool that runs an Apify Actor and returns the items of its default dataset.
 
     Use it to give a Haystack `Agent` access to any Actor from Apify Store. The tool takes its parameters from the
     Actor's input schema and its description from the Actor's definition, so the LLM sees the same inputs as a user
     of the Actor. Reading them needs one Apify API request when the tool is created without `parameters`.
 
-    The LLM gets the dataset items as JSON between the `UNTRUSTED_CONTENT_START` and `UNTRUSTED_CONTENT_END` markers,
-    since scraped content can carry prompt injections. `invoke` and `invoke_async` return the items unwrapped.
+    The LLM gets the dataset items as JSON between the `<<<EXTERNAL_UNTRUSTED_CONTENT>>>` and
+    `<<<END_EXTERNAL_UNTRUSTED_CONTENT>>>` markers, since scraped content can carry prompt injections. `invoke` and
+    `invoke_async` return the items unwrapped.
     For details, see https://docs.apify.com/platform/integrations/haystack
 
     Example:
@@ -52,6 +53,9 @@ class ApifyActorTool(_ApifyClientComponent, Tool):
             tool = ApifyActorTool('apify/rag-web-browser', dataset_items_limit=3)
             agent = Agent(chat_generator=OpenAIChatGenerator(), tools=[tool])
     """
+
+    # Serialized pipelines store the class by this public path, so it does not depend on the module layout.
+    __module__ = 'apify_haystack'
 
     def __init__(
         self,
@@ -152,10 +156,10 @@ class ApifyActorTool(_ApifyClientComponent, Tool):
             run_input=run_input,
             build=self.build,
             memory_mbytes=self.memory_mbytes,
-            run_timeout=_to_timedelta(self.timeout_secs),
-            max_total_charge_usd=_to_decimal(self.max_total_charge_usd),
+            run_timeout=to_timedelta(self.timeout_secs),
+            max_total_charge_usd=to_decimal(self.max_total_charge_usd),
         )
-        dataset_id = _get_dataset_id(run, f'Actor {self.actor_id}')
+        dataset_id = get_dataset_id(run, f'Actor {self.actor_id}')
         return client.dataset(dataset_id).list_items(clean=True, limit=self.dataset_items_limit).items
 
     async def _run_actor_async(self, **run_input: Any) -> list[dict]:
@@ -164,15 +168,15 @@ class ApifyActorTool(_ApifyClientComponent, Tool):
             run_input=run_input,
             build=self.build,
             memory_mbytes=self.memory_mbytes,
-            run_timeout=_to_timedelta(self.timeout_secs),
-            max_total_charge_usd=_to_decimal(self.max_total_charge_usd),
+            run_timeout=to_timedelta(self.timeout_secs),
+            max_total_charge_usd=to_decimal(self.max_total_charge_usd),
         )
-        dataset_id = _get_dataset_id(run, f'Actor {self.actor_id}')
+        dataset_id = get_dataset_id(run, f'Actor {self.actor_id}')
         return (await client.dataset(dataset_id).list_items(clean=True, limit=self.dataset_items_limit)).items
 
 
 def _get_actor_definition(apify_token: Secret, actor_id: str) -> dict[str, Any]:
-    client = _create_client(ApifyClient, apify_token.resolve_value())
+    client = create_client(ApifyClient, apify_token.resolve_value())
     try:
         build = client.actor(actor_id).default_build().get()
     finally:

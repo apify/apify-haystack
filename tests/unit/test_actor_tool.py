@@ -13,7 +13,7 @@ from haystack.tools import deserialize_tools_or_toolset_inplace
 from haystack.tools.errors import ToolInvocationError
 from haystack.utils import Secret
 
-from apify_haystack import ApifyActorTool, _client, actor_tool
+from apify_haystack import ApifyActorTool, _actor_tool, _client
 
 TOKEN = Secret.from_token('token')
 
@@ -55,7 +55,7 @@ def client_class(monkeypatch: pytest.MonkeyPatch) -> Mock:
     )
     client.dataset.return_value.list_items.return_value.items = ITEMS
     client_class = Mock(return_value=client)
-    monkeypatch.setattr(actor_tool, 'ApifyClient', client_class)
+    monkeypatch.setattr(_actor_tool, 'ApifyClient', client_class)
     monkeypatch.setattr(_client, 'ApifyClient', client_class)
     return client_class
 
@@ -199,7 +199,7 @@ def test_to_dict() -> None:
     )
 
     assert tool.to_dict() == {
-        'type': 'apify_haystack.actor_tool.ApifyActorTool',
+        'type': 'apify_haystack.ApifyActorTool',
         'data': {
             'actor_id': 'user/actor',
             'name': 'search',
