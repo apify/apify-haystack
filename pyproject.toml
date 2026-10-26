@@ -41,6 +41,8 @@ dev = [
         "poethepoet<1.0.0",
     "pre-commit<5.0.0",
     "pytest-cov<8.0.0",
+    "pytest-xdist<4.0.0",
+    "pytest-timeout<3.0.0",
     "pytest<10.0.0",
     "ruff~=0.17.0",
     "ty~=0.0.0",
@@ -93,6 +95,8 @@ indent-style = "space"
     "INP001",  # File {filename} is part of an implicit namespace package, add an __init__.py
     "PLR2004", # Magic value used in comparison, consider replacing {value} with a constant variable
     "S101",    # Use of assert detected
+    "S105",    # Possible hardcoded password assigned to: "{name}"
+    "S106",    # Possible hardcoded password assigned to argument: "{name}"
     "SLF001",  # Private member accessed: `{name}`
     "T20",     # flake8-print
     "TRY301",  # Abstract `raise` to an inner function
@@ -114,11 +118,15 @@ known-local-folder = ["apify_haystack"]
 [tool.ruff.lint.pylint]
 max-branches = 18
 
+[tool.pytest.ini_options]
+addopts = "-r a --verbose"
+timeout = 1800
+
 [tool.ty.environment]
 python-version = "3.9"
 
 [tool.ty.src]
-include = ["src"]
+include = ["src", "tests"]
 
 [tool.ty.rules]
 unused-ignore-comment = "error"
@@ -132,7 +140,9 @@ clean = { cmd = "rm -rf .coverage .pytest_cache .ruff_cache .ty_cache build dist
 install-sync = { cmd = "uv sync --all-extras", help = "Sync dependencies with all extras" }
 build = { cmd = "uv build", help = "Build the package" }
 type-check = { cmd = "uv run ty check", help = "Run the type checker" }
-check-code = { sequence = ["lint", "type-check"], help = "Run lint and type check" }
+unit-tests = { cmd = "uv run pytest --numprocesses=${TESTS_CONCURRENCY:-auto} tests/unit", help = "Run unit tests" }
+unit-tests-cov = { cmd = "uv run pytest --numprocesses=${TESTS_CONCURRENCY:-auto} --cov=src/apify_haystack --cov-report=xml:coverage-unit.xml tests/unit", help = "Run unit tests with an XML coverage report" }
+check-code = { sequence = ["lint", "type-check", "unit-tests"], help = "Run lint, type check, and unit tests" }
 
 [tool.poe.tasks.install-dev]
 shell = "uv sync --all-extras && uv run pre-commit install"
