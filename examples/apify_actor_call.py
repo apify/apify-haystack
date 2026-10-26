@@ -14,6 +14,8 @@ Haystack is an open-source framework fo...', meta: {'url': 'https://docs.haystac
 .....
 """
 
+from __future__ import annotations
+
 import os
 
 from haystack import Document
@@ -39,7 +41,7 @@ actor = ApifyDatasetFromActorCall(
     run_input=run_input,
     dataset_mapping_function=dataset_mapping_function,
 )
-print(f'Calling the Apify actor {actor_id} ... crawling will take some time ...')
+print(f'Calling the Apify Actor {actor_id} ... crawling will take some time ...')
 print('You can monitor the progress at: https://console.apify.com/actors/runs')
 
 dataset = actor.run()['documents']

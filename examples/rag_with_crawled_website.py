@@ -3,7 +3,7 @@ Retrieval-Augmented Generation (RAG): Extracting text content from a website and
 
 Steps involved:
 - Load environment variables, including API keys.
-- Define the Apify actor and its input parameters for web scraping.
+- Define the Apify Actor and its input parameters for web scraping.
 - Initialize the Apify dataset loader to fetch and process the dataset.
 - Set up the components for the RAG pipeline:
 - Load documents from Apify and store their embeddings in the document store.
@@ -17,6 +17,8 @@ question: "What is haystack?"
 Haystack is an open-source framework for building production-ready LLM applications
 ......
 """
+
+from __future__ import annotations
 
 import os
 
@@ -109,5 +111,5 @@ examples = [
 
 for example in examples:
     response = pipe.run({'embedder': {'text': example}, 'prompt_builder': {'question': example}})
-    print(f'question: {question}')
+    print(f'question: {example}')
     print(f'answer: {response["llm"]["replies"][0].text}')

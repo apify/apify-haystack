@@ -17,6 +17,8 @@ meta: {'url': 'https://haystack.deepset.ai/overview/quick-start',
 .....
 """
 
+from __future__ import annotations
+
 import os
 
 from haystack import Document, Pipeline
