@@ -53,12 +53,8 @@ class ApifyDatasetLoader:
         self.client = _create_client()
 
     @component.output_types(documents=list[Document])
-    def run(self):  # noqa: ANN201
-        """Load datasets produced by the `Apify Actors`.
-
-        Type-hint note: the output is not type-hinted, otherwise linting complains
-        that `run` method is not haystack a component
-        """
+    def run(self) -> dict[str, list[Document]]:
+        """Load datasets produced by the `Apify Actors`."""
         return {'documents': _load_documents(self.client, self.dataset_id, self.dataset_mapping_function)}
 
 
@@ -117,7 +113,7 @@ class ApifyDatasetFromActorCall:
         self.client = _create_client(apify_api_token)
 
     @component.output_types(documents=list[Document])
-    def run(self, run_input: dict | None = None):  # noqa: ANN201
+    def run(self, run_input: dict | None = None) -> dict[str, list[Document]]:
         """Run an Actor on the Apify platform and wait for results to be ready.
 
         Args:
@@ -133,9 +129,6 @@ class ApifyDatasetFromActorCall:
                     run_input={ "maxCrawlPages": 5 }
                 )
                 dataset = actor.run(run_input={ "startUrls": [{"url": "https://haystack.deepset.ai/"}] })
-
-        Type-hint note: the output is not type-hinted, otherwise linting complains
-        that `run` method is not haystack a component
         """
         if not (run_input := _merge_inputs(self.run_input, run_input)):
             raise ValueError('Please provide the run_input either in the constructor or in the run method.')
@@ -202,16 +195,13 @@ class ApifyDatasetFromTaskCall:
         self.client = _create_client(apify_api_token)
 
     @component.output_types(documents=list[Document])
-    def run(self, task_input: dict | None = None):  # noqa: ANN201
+    def run(self, task_input: dict | None = None) -> dict[str, list[Document]]:
         """Run an Actor on the Apify platform and wait for results to be ready.
 
         Args:
             task_input (dict, optional): The input parameters for the Actor you want to run. This can be provided
                 either in the `run` method or during the class instantiation. If specified in both places,
                 the inputs are merged and the values from `run` take precedence.
-
-        Type-hint note: the output is not type-hinted, otherwise linting complains
-        that `run` method is not haystack a component
         """
         if not (task_input := _merge_inputs(self.task_input, task_input)):
             raise ValueError('Please provide the task_input either in the constructor or in the run method.')

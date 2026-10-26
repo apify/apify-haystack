@@ -6,7 +6,7 @@ from unittest.mock import Mock
 
 import pytest
 from apify_client._models import Run
-from haystack import Document
+from haystack import Document, Pipeline
 
 from apify_haystack import ApifyDatasetFromActorCall, ApifyDatasetFromTaskCall, ApifyDatasetLoader, apify_dataset
 
@@ -207,3 +207,14 @@ def test_client_identifies_haystack_integration(component: Callable[[], Any]) ->
     assert headers['x-apify-integration-platform'] == 'haystack'
     assert headers['User-Agent'].startswith('ApifyClient/')
     assert headers['User-Agent'].endswith('; Origin/haystack')
+
+
+def test_actor_call_runs_in_pipeline(client: Mock) -> None:
+    """The component runs inside a Haystack `Pipeline` and takes `run_input` as a pipeline input."""
+    pipeline = Pipeline()
+    pipeline.add_component('loader', ApifyDatasetFromActorCall('actor-id', to_document, apify_api_token='token'))
+
+    result = pipeline.run({'loader': {'run_input': {'a': 1}}})
+
+    assert client.actor.return_value.call.call_args.kwargs['run_input'] == {'a': 1}
+    assert result == {'loader': {'documents': [to_document(item) for item in ITEMS]}}

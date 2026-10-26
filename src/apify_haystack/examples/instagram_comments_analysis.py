@@ -17,7 +17,7 @@ import os
 
 from haystack import Document, Pipeline
 from haystack.components.builders import PromptBuilder
-from haystack.components.generators import OpenAIGenerator
+from haystack.components.generators.chat import OpenAIChatGenerator
 from haystack.components.preprocessors import DocumentCleaner
 
 from apify_haystack import ApifyDatasetFromActorCall
@@ -58,7 +58,7 @@ cleaner = DocumentCleaner(
     remove_repeated_substrings=True,
 )
 prompt_builder = PromptBuilder(template=prompt)
-generator = OpenAIGenerator(model='gpt-3.5-turbo')
+generator = OpenAIChatGenerator()
 
 
 pipe = Pipeline()
@@ -68,7 +68,7 @@ pipe.add_component('prompt_builder', prompt_builder)
 pipe.add_component('llm', generator)
 pipe.connect('loader', 'cleaner')
 pipe.connect('cleaner', 'prompt_builder')
-pipe.connect('prompt_builder', 'llm')
+pipe.connect('prompt_builder.prompt', 'llm.messages')
 
 print('Vibe analysis:\n')
 
@@ -76,10 +76,10 @@ url1 = 'https://www.instagram.com/p/C_a9jcRuJZZ/'  # @tiffintech on How to easil
 print(f'\nScraping Instagram comments for: {url1} and running analysis (it might take around 30-60 secs) ...\n')
 
 res = pipe.run({'loader': {'run_input': {'directUrls': [url1]}}})
-print('Analysis:', res.get('llm', {}).get('replies', ['No response'])[0])
+print('Analysis:', res['llm']['replies'][0].text)
 
 url2 = 'https://www.instagram.com/p/C_RgBzogufK/'  # @maharishis on Affordable Care Act
 print(f'\nScraping Instagram comments for: {url2} and running analysis (it might take around 30-60 secs)... \n')
 
 res = pipe.run({'loader': {'run_input': {'directUrls': [url2]}}})
-print('Analysis:', res.get('llm', {}).get('replies', ['No response'])[0])
+print('Analysis:', res['llm']['replies'][0].text)
