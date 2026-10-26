@@ -178,7 +178,7 @@ class ApifyDatasetFromActorCall(_ApifyClientComponent):
             run_timeout=_to_timedelta(self.timeout_secs),
         )
         if run is None:
-            raise ValueError(f'No response found in the actor {self.actor_id} call')
+            raise ValueError(f'No response found in the Actor {self.actor_id} call')
 
         return {'documents': _load_documents(client, run.default_dataset_id, self.dataset_mapping_function)}
 
@@ -287,12 +287,12 @@ def _merge_inputs(input1: dict | None, input2: dict | None) -> dict | None:
     return input1 or input2
 
 
-def _create_client(token: str | None = None) -> ApifyClient:
+def _create_client(token: str | None) -> ApifyClient:
     """Create an Apify client that identifies its requests as coming from this integration."""
     client = ApifyClient(token, headers={'x-apify-integration-platform': HAYSTACK_INTEGRATION_PLATFORM})
 
-    # The user-agent marker predates the integration platform header and is kept for older platform paths. Passing it
-    # through `headers` would replace apify-client's own user agent, so the header is extended in place.
+    # Older platform paths attribute requests by the user-agent marker. Passing it through `headers` would replace
+    # apify-client's own user agent, so the header is extended in place.
     client.http_client._headers['User-Agent'] += f'; {HAYSTACK_ATTRIBUTE_USER_AGENT}'  # noqa: SLF001
     return client
 
