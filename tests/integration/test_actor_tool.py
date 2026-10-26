@@ -11,8 +11,8 @@ from apify_haystack import ApifyActorTool
 RAG_WEB_BROWSER = 'apify/rag-web-browser'
 
 # With a URL as the query, RAG Web Browser fetches that page instead of searching. Raw HTTP is its fastest
-# scraping tool, and `example.com` needs no browser.
-TOOL_ARGUMENTS = {'query': 'https://example.com', 'scrapingTool': 'raw-http'}
+# scraping tool, and the Crawlee homepage renders without a browser.
+TOOL_ARGUMENTS = {'query': 'https://crawlee.dev', 'scrapingTool': 'raw-http'}
 
 
 @component
@@ -47,7 +47,7 @@ def test_invoke_returns_dataset_items() -> None:
     tool.close()
 
     [item] = items
-    assert 'Example Domain' in item['markdown']
+    assert 'Crawlee' in item['markdown']
 
 
 def test_agent_gets_result_as_untrusted_content() -> None:
@@ -55,13 +55,13 @@ def test_agent_gets_result_as_untrusted_content() -> None:
     tool = ApifyActorTool(RAG_WEB_BROWSER, dataset_items_limit=1, max_total_charge_usd=0.1)
     agent = Agent(chat_generator=ScriptedChatGenerator(), tools=[tool])
 
-    result = agent.run([ChatMessage.from_user('What is on example.com?')])
+    result = agent.run([ChatMessage.from_user('What is on crawlee.dev?')])
     tool.close()
 
     text = result['last_message'].text
     assert text.startswith('<<<EXTERNAL_UNTRUSTED_CONTENT>>>\nSource: apify:apify/rag-web-browser\n')
     assert text.endswith('\n<<<END_EXTERNAL_UNTRUSTED_CONTENT>>>')
-    assert 'Example Domain' in text
+    assert 'Crawlee' in text
 
 
 async def test_agent_run_async_invokes_tool_asynchronously() -> None:
@@ -69,8 +69,8 @@ async def test_agent_run_async_invokes_tool_asynchronously() -> None:
     tool = ApifyActorTool(RAG_WEB_BROWSER, dataset_items_limit=1, max_total_charge_usd=0.1)
     agent = Agent(chat_generator=ScriptedChatGenerator(), tools=[tool])
 
-    result = await agent.run_async([ChatMessage.from_user('What is on example.com?')])
+    result = await agent.run_async([ChatMessage.from_user('What is on crawlee.dev?')])
     await tool.close_async()
 
     assert tool.client is None
-    assert 'Example Domain' in result['last_message'].text
+    assert 'Crawlee' in result['last_message'].text
