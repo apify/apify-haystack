@@ -20,6 +20,7 @@ classifiers = [
     "Programming Language :: Python :: 3.13",
     "Programming Language :: Python :: 3.14",
     "Topic :: Software Development :: Libraries",
+    "Typing :: Typed",
 ]
 keywords = ["apify", "crawler", "haystack", "rag", "scraper", "scraping"]
 dependencies = [
