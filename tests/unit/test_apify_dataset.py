@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from datetime import timedelta
 from typing import TYPE_CHECKING, Any
-from unittest.mock import Mock
+from unittest.mock import AsyncMock, Mock
 
 import pytest
 from apify_client._models import Run
@@ -41,6 +41,24 @@ def client_class(monkeypatch: pytest.MonkeyPatch) -> Mock:
 @pytest.fixture
 def client(client_class: Mock) -> Mock:
     return client_class.return_value
+
+
+@pytest.fixture
+def async_client_class(monkeypatch: pytest.MonkeyPatch) -> Mock:
+    client = Mock()
+    client.http_client._headers = {'User-Agent': 'ApifyClient/test'}
+    client.http_client.aclose = AsyncMock()
+    client.dataset.return_value.list_items = AsyncMock(return_value=Mock(items=ITEMS))
+    client.actor.return_value.call = AsyncMock(return_value=Mock(spec=Run, default_dataset_id='dataset-id'))
+    client.task.return_value.call = AsyncMock(return_value=Mock(spec=Run, default_dataset_id='dataset-id'))
+    async_client_class = Mock(return_value=client)
+    monkeypatch.setattr(apify_dataset, 'ApifyClientAsync', async_client_class)
+    return async_client_class
+
+
+@pytest.fixture
+def async_client(async_client_class: Mock) -> Mock:
+    return async_client_class.return_value
 
 
 def test_loader_maps_dataset_items_to_documents(client: Mock) -> None:
@@ -223,6 +241,18 @@ def test_client_identifies_haystack_integration(component: Callable[[], Any]) ->
     assert headers['User-Agent'].endswith('; Origin/haystack')
 
 
+async def test_async_client_identifies_haystack_integration() -> None:
+    """The async client sends the same Haystack integration header and user-agent origin as the sync one."""
+    loader = ApifyDatasetLoader('dataset-id', to_document)
+    await loader.warm_up_async()
+
+    assert loader.async_client is not None
+    headers = loader.async_client.http_client._headers
+
+    assert headers['x-apify-integration-platform'] == 'haystack'
+    assert headers['User-Agent'].endswith('; Origin/haystack')
+
+
 def test_actor_call_runs_in_pipeline(client: Mock) -> None:
     """The component runs inside a Haystack `Pipeline` and takes `run_input` as a pipeline input."""
     pipeline = Pipeline()
@@ -319,3 +349,99 @@ def test_pipeline_round_trips_through_yaml() -> None:
     restored = Pipeline.loads(pipeline.dumps(), allowed_modules=['apify_haystack', __name__])
 
     assert restored.to_dict() == pipeline.to_dict()
+
+
+async def test_loader_run_async_maps_dataset_items_to_documents(async_client: Mock, client_class: Mock) -> None:
+    """`run_async` lists the dataset with the async client and creates no sync client."""
+    loader = ApifyDatasetLoader(dataset_id='dataset-id', dataset_mapping_function=to_document)
+
+    result = await loader.run_async()
+
+    async_client.dataset.return_value.list_items.assert_awaited_once_with(clean=True)
+    client_class.assert_not_called()
+    assert result == {'documents': [to_document(item) for item in ITEMS]}
+
+
+async def test_actor_call_run_async_runs_actor_and_loads_its_dataset(async_client: Mock) -> None:
+    """`run_async` calls the Actor with the merged input and run options, then loads its default dataset."""
+    actor = ApifyDatasetFromActorCall(
+        'actor-id', to_document, run_input={'a': 1, 'b': 1}, build='beta', timeout_secs=60, apify_api_token=TOKEN
+    )
+
+    result = await actor.run_async(run_input={'b': 2})
+
+    async_client.actor.return_value.call.assert_awaited_once_with(
+        run_input={'a': 1, 'b': 2},
+        build='beta',
+        memory_mbytes=None,
+        run_timeout=timedelta(seconds=60),
+    )
+    async_client.dataset.assert_called_once_with('dataset-id')
+    assert result == {'documents': [to_document(item) for item in ITEMS]}
+
+
+async def test_task_call_run_async_runs_task_and_loads_its_dataset(async_client: Mock) -> None:
+    """`run_async` calls the task with the merged input and run options, then loads its default dataset."""
+    task = ApifyDatasetFromTaskCall(
+        'task-id', to_document, task_input={'a': 1}, memory_mbytes=512, apify_api_token=TOKEN
+    )
+
+    result = await task.run_async(task_input={'b': 2})
+
+    async_client.task.return_value.call.assert_awaited_once_with(
+        task_input={'a': 1, 'b': 2},
+        build=None,
+        memory_mbytes=512,
+        run_timeout=None,
+    )
+    assert result == {'documents': [to_document(item) for item in ITEMS]}
+
+
+@pytest.mark.parametrize(
+    ('component', 'match'),
+    [
+        pytest.param(ApifyDatasetFromActorCall('id', to_document, apify_api_token=TOKEN), 'run_input', id='actor call'),
+        pytest.param(ApifyDatasetFromTaskCall('id', to_document, apify_api_token=TOKEN), 'task_input', id='task call'),
+    ],
+)
+async def test_run_async_without_input_raises(async_client: Mock, component: Any, match: str) -> None:
+    """`run_async` without input in either the constructor or the call raises a `ValueError`."""
+    with pytest.raises(ValueError, match=match):
+        await component.run_async()
+
+    async_client.actor.assert_not_called()
+    async_client.task.assert_not_called()
+
+
+async def test_run_async_without_run_raises(async_client: Mock) -> None:
+    """A run missing from the async response raises a `ValueError`."""
+    async_client.actor.return_value.call.return_value = None
+    actor = ApifyDatasetFromActorCall('actor-id', to_document, run_input={'a': 1}, apify_api_token=TOKEN)
+
+    with pytest.raises(ValueError, match='No response found'):
+        await actor.run_async()
+
+
+async def test_close_async_releases_async_client(async_client_class: Mock, async_client: Mock) -> None:
+    """`close_async` closes the async HTTP client, and the next `warm_up_async` creates a new client."""
+    loader = ApifyDatasetLoader('dataset-id', to_document)
+    await loader.warm_up_async()
+
+    await loader.close_async()
+
+    async_client.http_client.aclose.assert_awaited_once()
+    assert loader.async_client is None
+    await loader.warm_up_async()
+    assert async_client_class.call_count == 2
+
+
+async def test_actor_call_runs_in_async_pipeline(async_client: Mock, client_class: Mock) -> None:
+    """`Pipeline.run_async` runs the component through its `run_async` with the async client."""
+    pipeline = Pipeline()
+    pipeline.add_component('loader', ApifyDatasetFromActorCall('actor-id', to_document, apify_api_token=TOKEN))
+
+    result = await pipeline.run_async({'loader': {'run_input': {'a': 1}}})
+
+    async_client.actor.return_value.call.assert_awaited_once()
+    client_class.assert_not_called()
+    assert result == {'loader': {'documents': [to_document(item) for item in ITEMS]}}

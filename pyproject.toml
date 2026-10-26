@@ -39,6 +39,7 @@ dependencies = [
 dev = [
     "poethepoet<1.0.0",
     "pre-commit<5.0.0",
+    "pytest-asyncio<2.0.0",
     "pytest-cov<8.0.0",
     "pytest-xdist<4.0.0",
     "pytest-timeout<3.0.0",
@@ -122,6 +123,8 @@ max-branches = 18
 
 [tool.pytest.ini_options]
 addopts = "-r a --verbose"
+asyncio_default_fixture_loop_scope = "function"
+asyncio_mode = "auto"
 timeout = 1800
 
 [tool.ty.environment]

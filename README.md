@@ -25,7 +25,7 @@ pip install apify-haystack
 - `ApifyDatasetFromTaskCall` does the same for a saved Actor task.
 - `ApifyDatasetLoader` loads an existing dataset by its ID.
 
-Each component turns dataset items into Haystack `Document` objects with a mapping function you provide.
+Each component turns dataset items into Haystack `Document` objects with a mapping function you provide. Every component also has `run_async`, which `Pipeline.run_async` uses to run it without blocking the event loop.
 
 The components read your Apify API token from the `APIFY_API_TOKEN` environment variable. To pass the token differently, use a Haystack `Secret`, for example `apify_api_token=Secret.from_env_var('MY_APIFY_TOKEN')`.
 
