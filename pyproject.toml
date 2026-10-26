@@ -4,7 +4,7 @@ build-backend = "uv_build"
 
 [project]
 name = "apify_haystack"
-version = "0.1.7"
+version = "1.7.1"
 description = "Apify-haystack integration"
 authors = [{ name = "Apify Technologies s.r.o.", email = "support@apify.com" }]
 license = "Apache-2.0"
