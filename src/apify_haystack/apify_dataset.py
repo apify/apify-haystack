@@ -1,13 +1,16 @@
 from __future__ import annotations
 
 import os
-from typing import Callable
+from typing import TYPE_CHECKING
 
 from apify_client import ApifyClient
 from haystack import component
 from haystack.dataclasses import Document
 
 from apify_haystack.constants import HAYSTACK_ATTRIBUTE_USER_AGENT
+
+if TYPE_CHECKING:
+    from collections.abc import Callable
 
 
 @component
