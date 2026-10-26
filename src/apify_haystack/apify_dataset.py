@@ -1,63 +1,22 @@
 from __future__ import annotations
 
 import json
-from datetime import timedelta
-from typing import TYPE_CHECKING, Any, Self, TypeVar
+from typing import TYPE_CHECKING, Any, Self
 
-from apify_client import ApifyClient, ApifyClientAsync
 from haystack import component, default_from_dict, default_to_dict
 from haystack.dataclasses import Document
 from haystack.utils import Secret, deserialize_callable, serialize_callable
 
-from apify_haystack.constants import HAYSTACK_ATTRIBUTE_USER_AGENT, HAYSTACK_INTEGRATION_PLATFORM
+from apify_haystack._client import _ApifyClientComponent, _get_dataset_id, _to_timedelta
 
 if TYPE_CHECKING:
     from collections.abc import Callable
 
-    from apify_client._models import Run
-
-_ClientT = TypeVar('_ClientT', ApifyClient, ApifyClientAsync)
+    from apify_client import ApifyClient, ApifyClientAsync
 
 
-class _ApifyClientComponent:
-    """Base for the components that call the Apify API.
-
-    The sync client lives between `warm_up` and `close`, the async one between `warm_up_async` and `close_async`.
-    """
-
-    apify_token: Secret
-    client: ApifyClient | None
-    async_client: ApifyClientAsync | None
-
-    def warm_up(self) -> None:
-        """Create the Apify client. `run` does this itself when the component was not warmed up."""
-        self._get_client()
-
-    async def warm_up_async(self) -> None:
-        """Create the async Apify client. `run_async` does this itself when the component was not warmed up."""
-        self._get_async_client()
-
-    def close(self) -> None:
-        """Release the Apify client. The next `warm_up` or `run` creates a new one."""
-        if self.client is not None:
-            self.client.http_client.close()
-            self.client = None
-
-    async def close_async(self) -> None:
-        """Release the async Apify client. The next `warm_up_async` or `run_async` creates a new one."""
-        if self.async_client is not None:
-            await self.async_client.http_client.aclose()
-            self.async_client = None
-
-    def _get_client(self) -> ApifyClient:
-        if self.client is None:
-            self.client = _create_client(ApifyClient, self.apify_token.resolve_value())
-        return self.client
-
-    def _get_async_client(self) -> ApifyClientAsync:
-        if self.async_client is None:
-            self.async_client = _create_client(ApifyClientAsync, self.apify_token.resolve_value())
-        return self.async_client
+class _ApifyDatasetComponent(_ApifyClientComponent):
+    """Base for the components that convert dataset items to Documents with a mapping function."""
 
     @classmethod
     def from_dict(cls, data: dict[str, Any]) -> Self:
@@ -70,7 +29,7 @@ class _ApifyClientComponent:
 
 
 @component
-class ApifyDatasetLoader(_ApifyClientComponent):
+class ApifyDatasetLoader(_ApifyDatasetComponent):
     """Load datasets produced by Apify Actors.
 
     Actors are serverless functions that can be used to scrape, crawl, and extract data from the web.
@@ -136,7 +95,7 @@ class ApifyDatasetLoader(_ApifyClientComponent):
 
 
 @component
-class ApifyDatasetFromActorCall(_ApifyClientComponent):
+class ApifyDatasetFromActorCall(_ApifyDatasetComponent):
     """Get an Apify dataset by calling an Apify Actor.
 
     Perform a call of an Apify Actor and load the produced dataset.
@@ -254,7 +213,7 @@ class ApifyDatasetFromActorCall(_ApifyClientComponent):
 
 
 @component
-class ApifyDatasetFromTaskCall(_ApifyClientComponent):
+class ApifyDatasetFromTaskCall(_ApifyDatasetComponent):
     """Get an Apify dataset by calling an Apify task.
 
     Perform a call of an Apify task and load the produced dataset.
@@ -398,25 +357,6 @@ def _merge_inputs(input1: dict | None, input2: dict | None) -> dict | None:
     return input1 or input2
 
 
-def _get_dataset_id(run: Run | None, label: str) -> str:
-    """Return the default dataset of a finished run, raising unless the run succeeded."""
-    if run is None:
-        raise ValueError(f'No response found in the {label} call')
-    if run.status != 'SUCCEEDED':
-        raise RuntimeError(f'The {label} run {run.id} finished with status {run.status}.')
-    return run.default_dataset_id
-
-
-def _create_client(client_class: type[_ClientT], token: str | None) -> _ClientT:
-    """Create an Apify client that identifies its requests as coming from this integration."""
-    client = client_class(token, headers={'x-apify-integration-platform': HAYSTACK_INTEGRATION_PLATFORM})
-
-    # Older platform paths attribute requests by the user-agent marker. Passing it through `headers` would replace
-    # apify-client's own user agent, so the header is extended in place.
-    client.http_client._headers['User-Agent'] += f'; {HAYSTACK_ATTRIBUTE_USER_AGENT}'  # noqa: SLF001
-    return client
-
-
 def _load_documents(
     client: ApifyClient,
     dataset_id: str,
@@ -433,7 +373,3 @@ async def _load_documents_async(
 ) -> list[Document]:
     dataset_items = (await client.dataset(dataset_id).list_items(clean=True)).items
     return [dataset_mapping_function(item) for item in dataset_items]
-
-
-def _to_timedelta(seconds: int | None) -> timedelta | None:
-    return None if seconds is None else timedelta(seconds=seconds)

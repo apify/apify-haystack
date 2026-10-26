@@ -13,7 +13,7 @@ from apify_haystack import (
     ApifyDatasetFromActorCall,
     ApifyDatasetFromTaskCall,
     ApifyDatasetLoader,
-    apify_dataset,
+    _client,
     default_dataset_mapping_function,
 )
 
@@ -44,7 +44,7 @@ def client_class(monkeypatch: pytest.MonkeyPatch) -> Mock:
         spec=Run, id='run-id', status='SUCCEEDED', default_dataset_id='dataset-id'
     )
     client_class = Mock(return_value=client)
-    monkeypatch.setattr(apify_dataset, 'ApifyClient', client_class)
+    monkeypatch.setattr(_client, 'ApifyClient', client_class)
     return client_class
 
 
@@ -66,7 +66,7 @@ def async_client_class(monkeypatch: pytest.MonkeyPatch) -> Mock:
         return_value=Mock(spec=Run, id='run-id', status='SUCCEEDED', default_dataset_id='dataset-id')
     )
     async_client_class = Mock(return_value=client)
-    monkeypatch.setattr(apify_dataset, 'ApifyClientAsync', async_client_class)
+    monkeypatch.setattr(_client, 'ApifyClientAsync', async_client_class)
     return async_client_class
 
 
