@@ -14,8 +14,32 @@ if TYPE_CHECKING:
     from collections.abc import Callable
 
 
+class _ApifyClientComponent:
+    """Base for the components that call the Apify API. The client lives between `warm_up` and `close`."""
+
+    client: ApifyClient | None
+
+    def warm_up(self) -> None:
+        """Create the Apify client. `run` does this itself when the component was not warmed up."""
+        self._get_client()
+
+    def close(self) -> None:
+        """Release the Apify client. The next `warm_up` or `run` creates a new one."""
+        if self.client is not None:
+            self.client.http_client.close()
+            self.client = None
+
+    def _get_client(self) -> ApifyClient:
+        if self.client is None:
+            self.client = _create_client(self._resolve_token())
+        return self.client
+
+    def _resolve_token(self) -> str | None:
+        return None
+
+
 @component
-class ApifyDatasetLoader:
+class ApifyDatasetLoader(_ApifyClientComponent):
     """Load datasets produced by `Apify Actors`.
 
     Actors are serverless functions that can be used to scrape, crawl, and extract data from the web.
@@ -49,17 +73,16 @@ class ApifyDatasetLoader:
         """
         self.dataset_id = dataset_id
         self.dataset_mapping_function = dataset_mapping_function
-
-        self.client = _create_client()
+        self.client = None
 
     @component.output_types(documents=list[Document])
     def run(self) -> dict[str, list[Document]]:
         """Load datasets produced by the `Apify Actors`."""
-        return {'documents': _load_documents(self.client, self.dataset_id, self.dataset_mapping_function)}
+        return {'documents': _load_documents(self._get_client(), self.dataset_id, self.dataset_mapping_function)}
 
 
 @component
-class ApifyDatasetFromActorCall:
+class ApifyDatasetFromActorCall(_ApifyClientComponent):
     """Get an Apify dataset by calling an Apify Actor.
 
     Perform call of Apify Actor and load produced dataset.
@@ -104,13 +127,8 @@ class ApifyDatasetFromActorCall:
         self.build = build
         self.memory_mbytes = memory_mbytes
         self.timeout_secs = timeout_secs
-
-        if not (apify_api_token := apify_api_token or os.getenv('APIFY_API_TOKEN')):
-            raise ValueError(
-                'Apify API token not found. Please provide Apify API token when initializing '
-                'ApifyDatasetCall, or set the environment variable APIFY_API_TOKEN.'
-            )
-        self.client = _create_client(apify_api_token)
+        self.apify_api_token = apify_api_token
+        self.client = None
 
     @component.output_types(documents=list[Document])
     def run(self, run_input: dict | None = None) -> dict[str, list[Document]]:
@@ -133,7 +151,8 @@ class ApifyDatasetFromActorCall:
         if not (run_input := _merge_inputs(self.run_input, run_input)):
             raise ValueError('Please provide the run_input either in the constructor or in the run method.')
 
-        run = self.client.actor(self.actor_id).call(
+        client = self._get_client()
+        run = client.actor(self.actor_id).call(
             run_input=run_input,
             build=self.build,
             memory_mbytes=self.memory_mbytes,
@@ -142,11 +161,14 @@ class ApifyDatasetFromActorCall:
         if run is None:
             raise ValueError(f'No response found in the actor {self.actor_id} call')
 
-        return {'documents': _load_documents(self.client, run.default_dataset_id, self.dataset_mapping_function)}
+        return {'documents': _load_documents(client, run.default_dataset_id, self.dataset_mapping_function)}
+
+    def _resolve_token(self) -> str:
+        return _require_token(self.apify_api_token, type(self).__name__)
 
 
 @component
-class ApifyDatasetFromTaskCall:
+class ApifyDatasetFromTaskCall(_ApifyClientComponent):
     """Get an Apify dataset by calling an Apify task.
 
     Perform a call of an Apify task and load the produced dataset.
@@ -186,13 +208,8 @@ class ApifyDatasetFromTaskCall:
         self.build = build
         self.memory_mbytes = memory_mbytes
         self.timeout_secs = timeout_secs
-
-        if not (apify_api_token := apify_api_token or os.getenv('APIFY_API_TOKEN')):
-            raise ValueError(
-                'Apify API token not found. Please provide Apify API token when initializing '
-                'ApifyDatasetCall, or set the environment variable APIFY_API_TOKEN.'
-            )
-        self.client = _create_client(apify_api_token)
+        self.apify_api_token = apify_api_token
+        self.client = None
 
     @component.output_types(documents=list[Document])
     def run(self, task_input: dict | None = None) -> dict[str, list[Document]]:
@@ -206,7 +223,8 @@ class ApifyDatasetFromTaskCall:
         if not (task_input := _merge_inputs(self.task_input, task_input)):
             raise ValueError('Please provide the task_input either in the constructor or in the run method.')
 
-        run = self.client.task(self.task_id).call(
+        client = self._get_client()
+        run = client.task(self.task_id).call(
             task_input=task_input,
             build=self.build,
             memory_mbytes=self.memory_mbytes,
@@ -215,13 +233,25 @@ class ApifyDatasetFromTaskCall:
         if run is None:
             raise ValueError(f'No response found in the task {self.task_id} call')
 
-        return {'documents': _load_documents(self.client, run.default_dataset_id, self.dataset_mapping_function)}
+        return {'documents': _load_documents(client, run.default_dataset_id, self.dataset_mapping_function)}
+
+    def _resolve_token(self) -> str:
+        return _require_token(self.apify_api_token, type(self).__name__)
 
 
 def _merge_inputs(input1: dict | None, input2: dict | None) -> dict | None:
     if input1 and input2:
         return input1 | input2
     return input1 or input2
+
+
+def _require_token(token: str | None, component_name: str) -> str:
+    if not (token := token or os.getenv('APIFY_API_TOKEN')):
+        raise ValueError(
+            f'Apify API token not found. Please provide Apify API token when initializing {component_name}, '
+            'or set the environment variable APIFY_API_TOKEN.'
+        )
+    return token
 
 
 def _create_client(token: str | None = None) -> ApifyClient:
