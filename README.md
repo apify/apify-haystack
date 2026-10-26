@@ -24,8 +24,9 @@ pip install apify-haystack
 - `ApifyDatasetFromActorCall` runs an Actor, waits for it to finish, and loads its default dataset.
 - `ApifyDatasetFromTaskCall` does the same for a saved Actor task.
 - `ApifyDatasetLoader` loads an existing dataset by its ID.
+- `ApifyWebSearch` searches the web with the [RAG Web Browser](https://apify.com/apify/rag-web-browser) Actor and returns the content of the top result pages.
 
-Each component turns dataset items into Haystack `Document` objects with a mapping function you provide. Every component also has `run_async`, which `Pipeline.run_async` uses to run it without blocking the event loop.
+The dataset components turn dataset items into Haystack `Document` objects with a mapping function you provide. Every component also has `run_async`, which `Pipeline.run_async` uses to run it without blocking the event loop.
 
 The components read your Apify API token from the `APIFY_API_TOKEN` environment variable. To pass the token differently, use a Haystack `Secret`, for example `apify_api_token=Secret.from_env_var('MY_APIFY_TOKEN')`.
 
@@ -65,6 +66,20 @@ dataset = actor.run()['documents']
 print(f'Loaded {len(dataset)} documents from the Apify Actor {actor_id}:')
 for d in dataset:
     print(d)
+```
+
+### Search the web
+
+`ApifyWebSearch` returns the top result pages as Markdown `Document` objects, with the page `url`, `title`, and `description` in `meta`, and their URLs in `links`:
+
+```python
+from apify_haystack import ApifyWebSearch
+
+search = ApifyWebSearch(top_k=3)
+result = search.run(query='What is Haystack?')
+
+for document in result['documents']:
+    print(document.meta['url'], document.meta['title'])
 ```
 
 ### Save and load a pipeline

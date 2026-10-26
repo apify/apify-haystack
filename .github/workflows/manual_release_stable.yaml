@@ -114,7 +114,7 @@ jobs:
           dist_dir: dist
           python_version: "3.14"
           smoke_code: |
-            from apify_haystack import ApifyDatasetFromActorCall, ApifyDatasetFromTaskCall, ApifyDatasetLoader
+            from apify_haystack import ApifyDatasetFromActorCall, ApifyDatasetFromTaskCall, ApifyDatasetLoader, ApifyWebSearch
 
       # Publish the package to PyPI using PyPA official GitHub action with OIDC authentication.
       - name: Publish package to PyPI
