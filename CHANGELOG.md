@@ -28,6 +28,7 @@ All notable changes to this project will be documented in this file.
 ### 🚜 Refactor
 
 - [**breaking**] Make the constants module private ([#68](https://github.com/apify/apify-haystack/pull/68)) ([8f5dbbd](https://github.com/apify/apify-haystack/commit/8f5dbbd7a4fa0e8c3c7c8036799d40744ee47624)) by [@vdusek](https://github.com/vdusek)
+- [**breaking**] Make all modules private and export the public API from the package root ([#77](https://github.com/apify/apify-haystack/pull/77)) ([4e6ccca](https://github.com/apify/apify-haystack/commit/4e6cccae287999f9ceb72fe9b67c2305b1206113)) by [@vdusek](https://github.com/vdusek)
 
 ### ⚙️ Miscellaneous Tasks
 
