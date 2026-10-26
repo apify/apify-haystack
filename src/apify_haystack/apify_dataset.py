@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 from datetime import timedelta
 from typing import TYPE_CHECKING, Any, Self, TypeVar
 
@@ -62,7 +63,8 @@ class _ApifyClientComponent:
     def from_dict(cls, data: dict[str, Any]) -> Self:
         """Deserialize the component from a dictionary created by `to_dict`."""
         init_parameters = data['init_parameters']
-        mapping_function = deserialize_callable(init_parameters['dataset_mapping_function'])
+        serialized_function = init_parameters.get('dataset_mapping_function')
+        mapping_function = deserialize_callable(serialized_function) if serialized_function else None
         data = {**data, 'init_parameters': {**init_parameters, 'dataset_mapping_function': mapping_function}}
         return default_from_dict(cls, data)
 
@@ -91,7 +93,7 @@ class ApifyDatasetLoader(_ApifyClientComponent):
     def __init__(
         self,
         dataset_id: str,
-        dataset_mapping_function: Callable[[dict], Document],
+        dataset_mapping_function: Callable[[dict], Document] | None = None,
         *,
         apify_token: Secret = Secret.from_env_var(['APIFY_TOKEN', 'APIFY_API_TOKEN'], strict=False),
     ) -> None:
@@ -99,14 +101,15 @@ class ApifyDatasetLoader(_ApifyClientComponent):
 
         Args:
             dataset_id (str): The ID of the dataset on the Apify platform.
-            dataset_mapping_function (Callable): A function that takes a single dictionary (an Apify dataset item)
-                and converts it to an instance of the Document class.
+            dataset_mapping_function (Callable, optional): A function that takes a single dictionary (an Apify dataset
+                item) and converts it to an instance of the Document class. Defaults to
+                `default_dataset_mapping_function`.
             apify_token (Secret, optional): The API token for the Apify platform. Defaults to the `APIFY_TOKEN`
                 environment variable, or the older `APIFY_API_TOKEN`. Without a token, only public datasets can be
                 loaded.
         """
         self.dataset_id = dataset_id
-        self.dataset_mapping_function = dataset_mapping_function
+        self.dataset_mapping_function = dataset_mapping_function or default_dataset_mapping_function
         self.apify_token = apify_token
         self.client = None
         self.async_client = None
@@ -127,7 +130,7 @@ class ApifyDatasetLoader(_ApifyClientComponent):
         return default_to_dict(
             self,
             dataset_id=self.dataset_id,
-            dataset_mapping_function=serialize_callable(self.dataset_mapping_function),
+            dataset_mapping_function=_serialize_mapping_function(self.dataset_mapping_function),
             apify_token=self.apify_token,
         )
 
@@ -146,7 +149,7 @@ class ApifyDatasetFromActorCall(_ApifyClientComponent):
     def __init__(
         self,
         actor_id: str,
-        dataset_mapping_function: Callable[[dict], Document],
+        dataset_mapping_function: Callable[[dict], Document] | None = None,
         run_input: dict | None = None,
         *,
         build: str | None = None,
@@ -158,8 +161,9 @@ class ApifyDatasetFromActorCall(_ApifyClientComponent):
 
         Args:
             actor_id (str): The ID or name of the Actor on the Apify platform.
-            dataset_mapping_function (Callable): A function that takes a single dictionary (an Apify dataset item)
-                and converts it to an instance of the Document class.
+            dataset_mapping_function (Callable, optional): A function that takes a single dictionary (an Apify dataset
+                item) and converts it to an instance of the Document class. Defaults to
+                `default_dataset_mapping_function`.
             run_input (dict, optional): The input parameters for the Actor you want to run. This can be provided
                 either in the `run` method or during the class instantiation. If specified in both places,
                 the inputs are merged and the values from `run` take precedence.
@@ -171,7 +175,7 @@ class ApifyDatasetFromActorCall(_ApifyClientComponent):
                 `APIFY_TOKEN` environment variable, or the older `APIFY_API_TOKEN`.
         """
         self.actor_id = actor_id
-        self.dataset_mapping_function = dataset_mapping_function
+        self.dataset_mapping_function = dataset_mapping_function or default_dataset_mapping_function
         self.run_input = run_input
         self.build = build
         self.memory_mbytes = memory_mbytes
@@ -240,7 +244,7 @@ class ApifyDatasetFromActorCall(_ApifyClientComponent):
         return default_to_dict(
             self,
             actor_id=self.actor_id,
-            dataset_mapping_function=serialize_callable(self.dataset_mapping_function),
+            dataset_mapping_function=_serialize_mapping_function(self.dataset_mapping_function),
             run_input=self.run_input,
             build=self.build,
             memory_mbytes=self.memory_mbytes,
@@ -263,7 +267,7 @@ class ApifyDatasetFromTaskCall(_ApifyClientComponent):
     def __init__(
         self,
         task_id: str,
-        dataset_mapping_function: Callable[[dict], Document],
+        dataset_mapping_function: Callable[[dict], Document] | None = None,
         task_input: dict | None = None,
         *,
         build: str | None = None,
@@ -275,8 +279,9 @@ class ApifyDatasetFromTaskCall(_ApifyClientComponent):
 
         Args:
             task_id (str): The ID or name of the task on the Apify platform.
-            dataset_mapping_function (Callable): A function that takes a single dictionary (an Apify dataset item)
-                and converts it to an instance of the Document class.
+            dataset_mapping_function (Callable, optional): A function that takes a single dictionary (an Apify dataset
+                item) and converts it to an instance of the Document class. Defaults to
+                `default_dataset_mapping_function`.
             task_input (dict, optional): The input parameters for the task you want to run. This can be provided
                 either in the `run` method or during the class instantiation. If specified in both places,
                 the inputs are merged and the values from `run` take precedence.
@@ -288,7 +293,7 @@ class ApifyDatasetFromTaskCall(_ApifyClientComponent):
                 `APIFY_TOKEN` environment variable, or the older `APIFY_API_TOKEN`.
         """
         self.task_id = task_id
-        self.dataset_mapping_function = dataset_mapping_function
+        self.dataset_mapping_function = dataset_mapping_function or default_dataset_mapping_function
         self.task_input = task_input
         self.build = build
         self.memory_mbytes = memory_mbytes
@@ -347,13 +352,44 @@ class ApifyDatasetFromTaskCall(_ApifyClientComponent):
         return default_to_dict(
             self,
             task_id=self.task_id,
-            dataset_mapping_function=serialize_callable(self.dataset_mapping_function),
+            dataset_mapping_function=_serialize_mapping_function(self.dataset_mapping_function),
             task_input=self.task_input,
             build=self.build,
             memory_mbytes=self.memory_mbytes,
             timeout_secs=self.timeout_secs,
             apify_token=self.apify_token,
         )
+
+
+def default_dataset_mapping_function(dataset_item: dict) -> Document:
+    """Convert an Apify dataset item to a `Document`.
+
+    It fits the items of the website crawling and web search Actors, such as Website Content Crawler and RAG Web
+    Browser: the content is the item's `markdown`, or its `text`, and `meta` holds the page `url`, `title`, and
+    `description`. An item with neither `markdown` nor `text` becomes a `Document` with the whole item as JSON.
+    """
+    # `metadata` describes a scraped page, `searchResult` the search result it came from.
+    page = next((value for value in (dataset_item.get('metadata'), dataset_item.get('searchResult')) if value), {})
+    if not isinstance(page, dict):
+        page = {}
+
+    content = dataset_item.get('markdown') or dataset_item.get('text')
+    if not isinstance(content, str) or not content:
+        content = json.dumps(dataset_item, ensure_ascii=False, default=str)
+
+    meta = {
+        'url': dataset_item.get('url') or page.get('url'),
+        'title': page.get('title'),
+        'description': page.get('description'),
+    }
+    return Document(content=content, meta={key: value for key, value in meta.items() if value is not None})
+
+
+def _serialize_mapping_function(dataset_mapping_function: Callable[[dict], Document]) -> str | None:
+    # The default is stored as `None`, so loading a pipeline that uses it needs no allowlisted module.
+    if dataset_mapping_function is default_dataset_mapping_function:
+        return None
+    return serialize_callable(dataset_mapping_function)
 
 
 def _merge_inputs(input1: dict | None, input2: dict | None) -> dict | None:

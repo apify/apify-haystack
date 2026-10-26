@@ -6,7 +6,12 @@ from haystack import component, default_from_dict, default_to_dict
 from haystack.dataclasses import Document
 from haystack.utils import Secret
 
-from apify_haystack.apify_dataset import _ApifyClientComponent, _get_dataset_id, _to_timedelta
+from apify_haystack.apify_dataset import (
+    _ApifyClientComponent,
+    _get_dataset_id,
+    _to_timedelta,
+    default_dataset_mapping_function,
+)
 
 RAG_WEB_BROWSER_ACTOR_ID = 'apify/rag-web-browser'
 
@@ -112,14 +117,5 @@ class ApifyWebSearch(_ApifyClientComponent):
 
 
 def _to_output(items: list[dict]) -> dict[str, list[Document] | list[str]]:
-    documents = []
-    for item in items:
-        # `metadata` describes the scraped page, `searchResult` the Google result it came from.
-        page = item.get('metadata') or item.get('searchResult') or {}
-        documents.append(
-            Document(
-                content=item.get('markdown') or item.get('text') or '',
-                meta={'url': page.get('url'), 'title': page.get('title'), 'description': page.get('description')},
-            )
-        )
-    return {'documents': documents, 'links': [document.meta['url'] for document in documents if document.meta['url']]}
+    documents = [default_dataset_mapping_function(item) for item in items]
+    return {'documents': documents, 'links': [document.meta['url'] for document in documents if 'url' in document.meta]}

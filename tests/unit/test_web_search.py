@@ -86,7 +86,7 @@ def test_result_without_url_has_no_link(client: Mock) -> None:
     result = ApifyWebSearch(apify_token=TOKEN).run(query='haystack')
 
     assert result == {
-        'documents': [Document(content='content', meta={'url': None, 'title': None, 'description': None})],
+        'documents': [Document(content='content')],
         'links': [],
     }
 
