@@ -18,23 +18,23 @@ ITEMS = [
     {'url': 'https://example.com/2', 'markdown': '# Second', 'metadata': {'title': 'Second'}},
 ]
 
-# Cheerio Scraper is free, official, and fast. Its page function decides what lands in the dataset, and
-# `example.com` keeps the page content fixed.
+# Cheerio Scraper is free, official, and fast. Its page function returns text from the request's `userData`, so
+# the dataset item doesn't depend on the content of the page, only on the page loading.
 CHEERIO_SCRAPER = 'apify/cheerio-scraper'
 
 PAGE_FUNCTION = """
-async function pageFunction({ $, request }) {
-    return { url: request.url, text: $('h1').text() };
+async function pageFunction({ request }) {
+    return { url: request.url, text: request.userData.text };
 }
 """
 
 # The required `proxyConfiguration` is left out, so the platform fills in its default, Apify Proxy.
 CHEERIO_INPUT = {
-    'startUrls': [{'url': 'https://example.com'}],
+    'startUrls': [{'url': 'https://crawlee.dev', 'userData': {'text': 'Scraped by apify-haystack tests'}}],
     'pageFunction': PAGE_FUNCTION,
 }
 
-EXAMPLE_DOCUMENT = Document(content='Example Domain', meta={'url': 'https://example.com'})
+EXPECTED_DOCUMENT = Document(content='Scraped by apify-haystack tests', meta={'url': 'https://crawlee.dev'})
 
 
 def to_document(item: dict) -> Document:
@@ -102,7 +102,7 @@ def test_actor_call_loads_run_dataset() -> None:
     result = actor.run(run_input={'startUrls': CHEERIO_INPUT['startUrls']})
     actor.close()
 
-    assert result == {'documents': [EXAMPLE_DOCUMENT]}
+    assert result == {'documents': [EXPECTED_DOCUMENT]}
 
 
 async def test_actor_call_run_async_loads_run_dataset() -> None:
@@ -112,7 +112,7 @@ async def test_actor_call_run_async_loads_run_dataset() -> None:
     result = await actor.run_async()
     await actor.close_async()
 
-    assert result == {'documents': [EXAMPLE_DOCUMENT]}
+    assert result == {'documents': [EXPECTED_DOCUMENT]}
 
 
 def test_actor_call_timed_out_run_raises() -> None:
@@ -130,7 +130,7 @@ def test_task_call_loads_run_dataset(task_id: str) -> None:
     result = task.run()
     task.close()
 
-    assert result == {'documents': [EXAMPLE_DOCUMENT]}
+    assert result == {'documents': [EXPECTED_DOCUMENT]}
 
 
 async def test_task_call_run_async_loads_run_dataset(task_id: str) -> None:
@@ -140,4 +140,4 @@ async def test_task_call_run_async_loads_run_dataset(task_id: str) -> None:
     result = await task.run_async()
     await task.close_async()
 
-    assert result == {'documents': [EXAMPLE_DOCUMENT]}
+    assert result == {'documents': [EXPECTED_DOCUMENT]}
