@@ -38,7 +38,7 @@ class ApifyWebSearch(_ApifyClientComponent):
         search_params: dict | None = None,
         *,
         timeout_secs: int | None = None,
-        apify_api_token: Secret = Secret.from_env_var('APIFY_API_TOKEN'),
+        apify_token: Secret = Secret.from_env_var(['APIFY_TOKEN', 'APIFY_API_TOKEN']),
     ) -> None:
         """Initialize the web search component.
 
@@ -47,8 +47,8 @@ class ApifyWebSearch(_ApifyClientComponent):
             search_params (dict, optional): Additional input for the RAG Web Browser Actor, for example
                 `{'scrapingTool': 'browser-playwright'}`. See the Actor's input schema for the options.
             timeout_secs (int, optional): Optional timeout for the Actor run, in seconds.
-            apify_api_token (Secret, optional): The API token for the Apify platform. Defaults to the
-                `APIFY_API_TOKEN` environment variable.
+            apify_token (Secret, optional): The API token for the Apify platform. Defaults to the
+                `APIFY_TOKEN` environment variable, or the older `APIFY_API_TOKEN`.
         """
         if not 1 <= top_k <= _MAX_TOP_K:
             raise ValueError(f'top_k must be between 1 and {_MAX_TOP_K}, got {top_k}.')
@@ -56,7 +56,7 @@ class ApifyWebSearch(_ApifyClientComponent):
         self.top_k = top_k
         self.search_params = search_params
         self.timeout_secs = timeout_secs
-        self.apify_api_token = apify_api_token
+        self.apify_token = apify_token
         self.client = None
         self.async_client = None
 
@@ -103,7 +103,7 @@ class ApifyWebSearch(_ApifyClientComponent):
             top_k=self.top_k,
             search_params=self.search_params,
             timeout_secs=self.timeout_secs,
-            apify_api_token=self.apify_api_token,
+            apify_token=self.apify_token,
         )
 
     @classmethod

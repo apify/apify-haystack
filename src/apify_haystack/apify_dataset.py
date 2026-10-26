@@ -22,7 +22,7 @@ class _ApifyClientComponent:
     The sync client lives between `warm_up` and `close`, the async one between `warm_up_async` and `close_async`.
     """
 
-    apify_api_token: Secret
+    apify_token: Secret
     client: ApifyClient | None
     async_client: ApifyClientAsync | None
 
@@ -48,12 +48,12 @@ class _ApifyClientComponent:
 
     def _get_client(self) -> ApifyClient:
         if self.client is None:
-            self.client = _create_client(ApifyClient, self.apify_api_token.resolve_value())
+            self.client = _create_client(ApifyClient, self.apify_token.resolve_value())
         return self.client
 
     def _get_async_client(self) -> ApifyClientAsync:
         if self.async_client is None:
-            self.async_client = _create_client(ApifyClientAsync, self.apify_api_token.resolve_value())
+            self.async_client = _create_client(ApifyClientAsync, self.apify_token.resolve_value())
         return self.async_client
 
     @classmethod
@@ -91,7 +91,7 @@ class ApifyDatasetLoader(_ApifyClientComponent):
         dataset_id: str,
         dataset_mapping_function: Callable[[dict], Document],
         *,
-        apify_api_token: Secret = Secret.from_env_var('APIFY_API_TOKEN', strict=False),
+        apify_token: Secret = Secret.from_env_var(['APIFY_TOKEN', 'APIFY_API_TOKEN'], strict=False),
     ) -> None:
         """Initialize the Apify dataset loader.
 
@@ -99,12 +99,13 @@ class ApifyDatasetLoader(_ApifyClientComponent):
             dataset_id (str): The ID of the dataset on the Apify platform.
             dataset_mapping_function (Callable): A function that takes a single dictionary (an Apify dataset item)
                 and converts it to an instance of the Document class.
-            apify_api_token (Secret, optional): The API token for the Apify platform. Defaults to the
-                `APIFY_API_TOKEN` environment variable. Without a token, only public datasets can be loaded.
+            apify_token (Secret, optional): The API token for the Apify platform. Defaults to the `APIFY_TOKEN`
+                environment variable, or the older `APIFY_API_TOKEN`. Without a token, only public datasets can be
+                loaded.
         """
         self.dataset_id = dataset_id
         self.dataset_mapping_function = dataset_mapping_function
-        self.apify_api_token = apify_api_token
+        self.apify_token = apify_token
         self.client = None
         self.async_client = None
 
@@ -125,7 +126,7 @@ class ApifyDatasetLoader(_ApifyClientComponent):
             self,
             dataset_id=self.dataset_id,
             dataset_mapping_function=serialize_callable(self.dataset_mapping_function),
-            apify_api_token=self.apify_api_token,
+            apify_token=self.apify_token,
         )
 
 
@@ -136,8 +137,8 @@ class ApifyDatasetFromActorCall(_ApifyClientComponent):
     Perform a call of an Apify Actor and load the produced dataset.
     For details, see https://docs.apify.com/platform/integrations/haystack
 
-    It needs an Apify API token, read from the `APIFY_API_TOKEN` environment variable by default, or passed as
-    `apify_api_token`.
+    It needs an Apify API token, read from the `APIFY_TOKEN` environment variable by default, or passed as
+    `apify_token`.
     """
 
     def __init__(
@@ -149,7 +150,7 @@ class ApifyDatasetFromActorCall(_ApifyClientComponent):
         build: str | None = None,
         memory_mbytes: int | None = None,
         timeout_secs: int | None = None,
-        apify_api_token: Secret = Secret.from_env_var('APIFY_API_TOKEN'),
+        apify_token: Secret = Secret.from_env_var(['APIFY_TOKEN', 'APIFY_API_TOKEN']),
     ) -> None:
         """Initialize the Apify Actor loader.
 
@@ -164,8 +165,8 @@ class ApifyDatasetFromActorCall(_ApifyClientComponent):
                 It can be either a build tag or build number.
             memory_mbytes (int, optional): Optional memory limit for the run, in megabytes.
             timeout_secs (int, optional): Optional timeout for the run, in seconds.
-            apify_api_token (Secret, optional): The API token for the Apify platform. Defaults to the
-                `APIFY_API_TOKEN` environment variable.
+            apify_token (Secret, optional): The API token for the Apify platform. Defaults to the
+                `APIFY_TOKEN` environment variable, or the older `APIFY_API_TOKEN`.
         """
         self.actor_id = actor_id
         self.dataset_mapping_function = dataset_mapping_function
@@ -173,7 +174,7 @@ class ApifyDatasetFromActorCall(_ApifyClientComponent):
         self.build = build
         self.memory_mbytes = memory_mbytes
         self.timeout_secs = timeout_secs
-        self.apify_api_token = apify_api_token
+        self.apify_token = apify_token
         self.client = None
         self.async_client = None
 
@@ -246,7 +247,7 @@ class ApifyDatasetFromActorCall(_ApifyClientComponent):
             build=self.build,
             memory_mbytes=self.memory_mbytes,
             timeout_secs=self.timeout_secs,
-            apify_api_token=self.apify_api_token,
+            apify_token=self.apify_token,
         )
 
 
@@ -257,8 +258,8 @@ class ApifyDatasetFromTaskCall(_ApifyClientComponent):
     Perform a call of an Apify task and load the produced dataset.
     For details, see https://docs.apify.com/platform/integrations/haystack
 
-    It needs an Apify API token, read from the `APIFY_API_TOKEN` environment variable by default, or passed as
-    `apify_api_token`.
+    It needs an Apify API token, read from the `APIFY_TOKEN` environment variable by default, or passed as
+    `apify_token`.
     """
 
     def __init__(
@@ -270,7 +271,7 @@ class ApifyDatasetFromTaskCall(_ApifyClientComponent):
         build: str | None = None,
         memory_mbytes: int | None = None,
         timeout_secs: int | None = None,
-        apify_api_token: Secret = Secret.from_env_var('APIFY_API_TOKEN'),
+        apify_token: Secret = Secret.from_env_var(['APIFY_TOKEN', 'APIFY_API_TOKEN']),
     ) -> None:
         """Initialize the Apify task loader.
 
@@ -285,8 +286,8 @@ class ApifyDatasetFromTaskCall(_ApifyClientComponent):
                 It can be either a build tag or build number.
             memory_mbytes (int, optional): Optional memory limit for the run, in megabytes.
             timeout_secs (int, optional): Optional timeout for the run, in seconds.
-            apify_api_token (Secret, optional): The API token for the Apify platform. Defaults to the
-                `APIFY_API_TOKEN` environment variable.
+            apify_token (Secret, optional): The API token for the Apify platform. Defaults to the
+                `APIFY_TOKEN` environment variable, or the older `APIFY_API_TOKEN`.
         """
         self.task_id = task_id
         self.dataset_mapping_function = dataset_mapping_function
@@ -294,7 +295,7 @@ class ApifyDatasetFromTaskCall(_ApifyClientComponent):
         self.build = build
         self.memory_mbytes = memory_mbytes
         self.timeout_secs = timeout_secs
-        self.apify_api_token = apify_api_token
+        self.apify_token = apify_token
         self.client = None
         self.async_client = None
 
@@ -357,7 +358,7 @@ class ApifyDatasetFromTaskCall(_ApifyClientComponent):
             build=self.build,
             memory_mbytes=self.memory_mbytes,
             timeout_secs=self.timeout_secs,
-            apify_api_token=self.apify_api_token,
+            apify_token=self.apify_token,
         )
 
 

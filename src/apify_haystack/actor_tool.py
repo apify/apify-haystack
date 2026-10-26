@@ -53,7 +53,7 @@ class ApifyActorTool(_ApifyClientComponent, Tool):
         build: str | None = None,
         memory_mbytes: int | None = None,
         timeout_secs: int | None = None,
-        apify_api_token: Secret = Secret.from_env_var('APIFY_API_TOKEN'),
+        apify_token: Secret = Secret.from_env_var(['APIFY_TOKEN', 'APIFY_API_TOKEN']),
     ) -> None:
         """Initialize the Actor tool.
 
@@ -69,20 +69,20 @@ class ApifyActorTool(_ApifyClientComponent, Tool):
                 It can be either a build tag or build number.
             memory_mbytes (int, optional): Optional memory limit for the run, in megabytes.
             timeout_secs (int, optional): Optional timeout for the run, in seconds.
-            apify_api_token (Secret, optional): The API token for the Apify platform. Defaults to the
-                `APIFY_API_TOKEN` environment variable.
+            apify_token (Secret, optional): The API token for the Apify platform. Defaults to the
+                `APIFY_TOKEN` environment variable, or the older `APIFY_API_TOKEN`.
         """
         self.actor_id = actor_id
         self.max_items = max_items
         self.build = build
         self.memory_mbytes = memory_mbytes
         self.timeout_secs = timeout_secs
-        self.apify_api_token = apify_api_token
+        self.apify_token = apify_token
         self.client = None
         self.async_client = None
 
         if parameters is None or description is None:
-            actor_definition = _get_actor_definition(apify_api_token, actor_id)
+            actor_definition = _get_actor_definition(apify_token, actor_id)
             if parameters is None:
                 parameters = _to_tool_parameters(actor_definition.get('input') or {})
             if description is None:
@@ -109,7 +109,7 @@ class ApifyActorTool(_ApifyClientComponent, Tool):
                 'build': self.build,
                 'memory_mbytes': self.memory_mbytes,
                 'timeout_secs': self.timeout_secs,
-                'apify_api_token': self.apify_api_token.to_dict(),
+                'apify_token': self.apify_token.to_dict(),
             },
         }
 
@@ -117,7 +117,7 @@ class ApifyActorTool(_ApifyClientComponent, Tool):
     def from_dict(cls, data: dict[str, Any]) -> ApifyActorTool:
         """Deserialize the tool from a dictionary created by `to_dict`. It makes no Apify API request."""
         init_parameters = dict(data['data'])
-        deserialize_secrets_inplace(init_parameters, keys=['apify_api_token'])
+        deserialize_secrets_inplace(init_parameters, keys=['apify_token'])
         return cls(**init_parameters)
 
     def _run_actor(self, **run_input: Any) -> list[dict]:
@@ -151,8 +151,8 @@ class ApifyActorTool(_ApifyClientComponent, Tool):
         return run.default_dataset_id
 
 
-def _get_actor_definition(apify_api_token: Secret, actor_id: str) -> dict[str, Any]:
-    client = _create_client(ApifyClient, apify_api_token.resolve_value())
+def _get_actor_definition(apify_token: Secret, actor_id: str) -> dict[str, Any]:
+    client = _create_client(ApifyClient, apify_token.resolve_value())
     try:
         build = client.actor(actor_id).default_build().get()
     finally:

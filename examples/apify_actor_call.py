@@ -23,7 +23,7 @@ from haystack import Document
 from apify_haystack import ApifyDatasetFromActorCall
 
 # Set API keys here
-os.environ['APIFY_API_TOKEN'] = ''
+os.environ['APIFY_TOKEN'] = ''
 
 actor_id = 'apify/website-content-crawler'
 run_input = {

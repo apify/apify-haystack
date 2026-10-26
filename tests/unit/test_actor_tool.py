@@ -53,7 +53,7 @@ def client(client_class: Mock) -> Mock:
 
 def test_tool_is_built_from_actor_definition(client: Mock) -> None:
     """Without `parameters` and `description`, the tool reads them from the Actor's default build."""
-    tool = ApifyActorTool('apify/rag-web-browser', apify_api_token=TOKEN)
+    tool = ApifyActorTool('apify/rag-web-browser', apify_token=TOKEN)
 
     client.actor.assert_called_once_with('apify/rag-web-browser')
     client.http_client.close.assert_called_once()
@@ -72,7 +72,7 @@ def test_tool_is_built_from_actor_definition(client: Mock) -> None:
 def test_explicit_schema_makes_no_api_request(client_class: Mock) -> None:
     """With `name`, `description`, and `parameters` given, creating the tool makes no Apify API request."""
     tool = ApifyActorTool(
-        'apify/rag-web-browser', name='search', description='Search.', parameters=PARAMETERS, apify_api_token=TOKEN
+        'apify/rag-web-browser', name='search', description='Search.', parameters=PARAMETERS, apify_token=TOKEN
     )
 
     client_class.assert_not_called()
@@ -85,7 +85,7 @@ def test_actor_without_description_gets_default_description(client: Mock) -> Non
         'actorDefinition': {}
     }
 
-    tool = ApifyActorTool('user/actor', apify_api_token=TOKEN)
+    tool = ApifyActorTool('user/actor', apify_token=TOKEN)
 
     assert tool.description == 'Run the Apify Actor user/actor.'
     assert tool.parameters == {'type': 'object', 'properties': {}, 'required': []}
@@ -96,7 +96,7 @@ def test_missing_build_raises(client: Mock) -> None:
     client.actor.return_value.default_build.return_value.get.return_value = None
 
     with pytest.raises(ValueError, match='default build of the Actor user/actor was not found'):
-        ApifyActorTool('user/actor', apify_api_token=TOKEN)
+        ApifyActorTool('user/actor', apify_token=TOKEN)
 
 
 @pytest.mark.usefixtures('client')
@@ -110,7 +110,7 @@ def test_missing_build_raises(client: Mock) -> None:
 )
 def test_tool_name_is_valid_function_name(actor_id: str, expected_name: str) -> None:
     """The default tool name keeps only characters LLM function names allow and fits in 64 characters."""
-    assert ApifyActorTool(actor_id, apify_api_token=TOKEN).name == expected_name
+    assert ApifyActorTool(actor_id, apify_token=TOKEN).name == expected_name
 
 
 def test_invoke_runs_actor_and_returns_dataset_items(client: Mock) -> None:
@@ -123,7 +123,7 @@ def test_invoke_runs_actor_and_returns_dataset_items(client: Mock) -> None:
         build='beta',
         memory_mbytes=512,
         timeout_secs=60,
-        apify_api_token=TOKEN,
+        apify_token=TOKEN,
     )
 
     result = tool.invoke(query='apify')
@@ -142,7 +142,7 @@ def test_invoke_runs_actor_and_returns_dataset_items(client: Mock) -> None:
 def test_failed_run_raises(client: Mock) -> None:
     """A run that does not succeed fails the tool call with its status, so the LLM learns about it."""
     client.actor.return_value.call.return_value = Mock(spec=Run, id='run-id', status='FAILED')
-    tool = ApifyActorTool('user/actor', parameters=PARAMETERS, description='Search.', apify_api_token=TOKEN)
+    tool = ApifyActorTool('user/actor', parameters=PARAMETERS, description='Search.', apify_token=TOKEN)
 
     with pytest.raises(ToolInvocationError, match='run run-id finished with status FAILED'):
         tool.invoke(query='apify')
@@ -157,7 +157,7 @@ async def test_invoke_async_uses_async_client(monkeypatch: pytest.MonkeyPatch, c
     )
     async_client.dataset.return_value.list_items = AsyncMock(return_value=Mock(items=ITEMS))
     monkeypatch.setattr(apify_dataset, 'ApifyClientAsync', Mock(return_value=async_client))
-    tool = ApifyActorTool('user/actor', parameters=PARAMETERS, description='Search.', apify_api_token=TOKEN)
+    tool = ApifyActorTool('user/actor', parameters=PARAMETERS, description='Search.', apify_token=TOKEN)
 
     result = await tool.invoke_async(query='apify')
 
@@ -181,7 +181,7 @@ def test_to_dict() -> None:
             'build': None,
             'memory_mbytes': None,
             'timeout_secs': None,
-            'apify_api_token': {'type': 'env_var', 'env_vars': ['APIFY_API_TOKEN'], 'strict': True},
+            'apify_token': {'type': 'env_var', 'env_vars': ['APIFY_TOKEN', 'APIFY_API_TOKEN'], 'strict': True},
         },
     }
 

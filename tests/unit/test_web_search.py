@@ -52,7 +52,7 @@ def async_client(monkeypatch: pytest.MonkeyPatch) -> Mock:
 
 def test_run_searches_and_returns_documents_and_links(client: Mock) -> None:
     """`run` calls the RAG Web Browser with the query and returns one `Document` and link per result page."""
-    search = ApifyWebSearch(top_k=2, search_params={'scrapingTool': 'raw-http'}, timeout_secs=60, apify_api_token=TOKEN)
+    search = ApifyWebSearch(top_k=2, search_params={'scrapingTool': 'raw-http'}, timeout_secs=60, apify_token=TOKEN)
 
     result = search.run(query='haystack')
 
@@ -67,7 +67,7 @@ def test_run_searches_and_returns_documents_and_links(client: Mock) -> None:
 
 def test_search_params_cannot_override_query_or_top_k(client: Mock) -> None:
     """`query` and `top_k` win over the same keys in `search_params`."""
-    search = ApifyWebSearch(top_k=3, search_params={'query': 'other', 'maxResults': 50}, apify_api_token=TOKEN)
+    search = ApifyWebSearch(top_k=3, search_params={'query': 'other', 'maxResults': 50}, apify_token=TOKEN)
 
     search.run(query='haystack')
 
@@ -79,7 +79,7 @@ def test_result_without_url_has_no_link(client: Mock) -> None:
     """A result without any URL becomes a `Document` but adds nothing to `links`."""
     client.dataset.return_value.list_items.return_value.items = [{'markdown': 'content'}]
 
-    result = ApifyWebSearch(apify_api_token=TOKEN).run(query='haystack')
+    result = ApifyWebSearch(apify_token=TOKEN).run(query='haystack')
 
     assert result == {
         'documents': [Document(content='content', meta={'url': None, 'title': None, 'description': None})],
@@ -92,7 +92,7 @@ def test_run_without_run_raises(client: Mock) -> None:
     client.actor.return_value.call.return_value = None
 
     with pytest.raises(ValueError, match='No response found'):
-        ApifyWebSearch(apify_api_token=TOKEN).run(query='haystack')
+        ApifyWebSearch(apify_token=TOKEN).run(query='haystack')
 
 
 @pytest.mark.parametrize(
@@ -105,12 +105,12 @@ def test_run_without_run_raises(client: Mock) -> None:
 def test_top_k_out_of_range_raises(top_k: int) -> None:
     """A `top_k` outside the range the Actor accepts raises a `ValueError`."""
     with pytest.raises(ValueError, match='top_k must be between 1 and 100'):
-        ApifyWebSearch(top_k=top_k, apify_api_token=TOKEN)
+        ApifyWebSearch(top_k=top_k, apify_token=TOKEN)
 
 
 async def test_run_async_searches_and_returns_documents_and_links(async_client: Mock) -> None:
     """`run_async` calls the RAG Web Browser with the async client and returns the same output as `run`."""
-    search = ApifyWebSearch(top_k=2, apify_api_token=TOKEN)
+    search = ApifyWebSearch(top_k=2, apify_token=TOKEN)
 
     result = await search.run_async(query='haystack')
 
@@ -124,7 +124,7 @@ async def test_run_async_searches_and_returns_documents_and_links(async_client: 
 def test_runs_in_pipeline(client: Mock) -> None:
     """The component runs inside a Haystack `Pipeline` and takes `query` as a pipeline input."""
     pipeline = Pipeline()
-    pipeline.add_component('search', ApifyWebSearch(apify_api_token=TOKEN))
+    pipeline.add_component('search', ApifyWebSearch(apify_token=TOKEN))
 
     result = pipeline.run({'search': {'query': 'haystack'}})
 
@@ -142,7 +142,7 @@ def test_to_dict() -> None:
             'top_k': 3,
             'search_params': {'scrapingTool': 'raw-http'},
             'timeout_secs': 60,
-            'apify_api_token': {'type': 'env_var', 'env_vars': ['APIFY_API_TOKEN'], 'strict': True},
+            'apify_token': {'type': 'env_var', 'env_vars': ['APIFY_TOKEN', 'APIFY_API_TOKEN'], 'strict': True},
         },
     }
 
@@ -154,4 +154,4 @@ def test_from_dict_restores_component() -> None:
     restored = ApifyWebSearch.from_dict(search.to_dict())
 
     assert restored.to_dict() == search.to_dict()
-    assert isinstance(restored.apify_api_token, Secret)
+    assert isinstance(restored.apify_token, Secret)
