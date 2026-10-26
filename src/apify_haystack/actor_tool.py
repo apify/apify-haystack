@@ -43,7 +43,7 @@ class ApifyActorTool(_ApifyClientComponent, Tool):
 
             from apify_haystack import ApifyActorTool
 
-            tool = ApifyActorTool('apify/rag-web-browser', max_items=3)
+            tool = ApifyActorTool('apify/rag-web-browser', dataset_items_limit=3)
             agent = Agent(chat_generator=OpenAIChatGenerator(), tools=[tool])
     """
 
@@ -54,7 +54,7 @@ class ApifyActorTool(_ApifyClientComponent, Tool):
         name: str | None = None,
         description: str | None = None,
         parameters: dict[str, Any] | None = None,
-        max_items: int | None = None,
+        dataset_items_limit: int | None = None,
         build: str | None = None,
         memory_mbytes: int | None = None,
         timeout_secs: int | None = None,
@@ -68,8 +68,9 @@ class ApifyActorTool(_ApifyClientComponent, Tool):
             description (str, optional): The tool description the LLM sees. Defaults to the Actor's description.
             parameters (dict, optional): The JSON schema of the tool parameters. Defaults to a schema built from the
                 Actor's input schema.
-            max_items (int, optional): The maximum number of dataset items to return. Limit it to keep the tool
-                output within the LLM's context window.
+            dataset_items_limit (int, optional): The maximum number of dataset items to return. Limit it to keep the
+                tool output within the LLM's context window. It only limits what the tool reads, not what the run
+                produces or is charged for.
             build (str, optional): Optionally specifies the Actor build to run.
                 It can be either a build tag or build number.
             memory_mbytes (int, optional): Optional memory limit for the run, in megabytes.
@@ -78,7 +79,7 @@ class ApifyActorTool(_ApifyClientComponent, Tool):
                 `APIFY_TOKEN` environment variable, or the older `APIFY_API_TOKEN`.
         """
         self.actor_id = actor_id
-        self.max_items = max_items
+        self.dataset_items_limit = dataset_items_limit
         self.build = build
         self.memory_mbytes = memory_mbytes
         self.timeout_secs = timeout_secs
@@ -111,7 +112,7 @@ class ApifyActorTool(_ApifyClientComponent, Tool):
                 'name': self.name,
                 'description': self.description,
                 'parameters': self.parameters,
-                'max_items': self.max_items,
+                'dataset_items_limit': self.dataset_items_limit,
                 'build': self.build,
                 'memory_mbytes': self.memory_mbytes,
                 'timeout_secs': self.timeout_secs,
@@ -143,7 +144,7 @@ class ApifyActorTool(_ApifyClientComponent, Tool):
             run_timeout=_to_timedelta(self.timeout_secs),
         )
         dataset_id = _get_dataset_id(run, f'Actor {self.actor_id}')
-        return client.dataset(dataset_id).list_items(clean=True, limit=self.max_items).items
+        return client.dataset(dataset_id).list_items(clean=True, limit=self.dataset_items_limit).items
 
     async def _run_actor_async(self, **run_input: Any) -> list[dict]:
         client = self._get_async_client()
@@ -154,7 +155,7 @@ class ApifyActorTool(_ApifyClientComponent, Tool):
             run_timeout=_to_timedelta(self.timeout_secs),
         )
         dataset_id = _get_dataset_id(run, f'Actor {self.actor_id}')
-        return (await client.dataset(dataset_id).list_items(clean=True, limit=self.max_items)).items
+        return (await client.dataset(dataset_id).list_items(clean=True, limit=self.dataset_items_limit)).items
 
 
 def _get_actor_definition(apify_token: Secret, actor_id: str) -> dict[str, Any]:
