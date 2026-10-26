@@ -59,18 +59,19 @@ def test_loader_maps_dataset_items_to_documents(client: Mock) -> None:
     ],
 )
 def test_missing_token_raises(monkeypatch: pytest.MonkeyPatch, component_class: type) -> None:
-    """Without a token argument or `APIFY_API_TOKEN`, the constructor raises a `ValueError`."""
+    """Without a token argument or `APIFY_API_TOKEN`, `warm_up` raises a `ValueError` naming the component."""
     monkeypatch.delenv('APIFY_API_TOKEN', raising=False)
+    instance = component_class('id', to_document)
 
-    with pytest.raises(ValueError, match='Apify API token not found'):
-        component_class('id', to_document)
+    with pytest.raises(ValueError, match=f'Apify API token not found.*{component_class.__name__}'):
+        instance.warm_up()
 
 
 def test_token_is_read_from_environment(monkeypatch: pytest.MonkeyPatch, client_class: Mock) -> None:
     """Without a token argument, the client gets the token from `APIFY_API_TOKEN`."""
     monkeypatch.setenv('APIFY_API_TOKEN', 'env-token')
 
-    ApifyDatasetFromActorCall('actor-id', to_document)
+    ApifyDatasetFromActorCall('actor-id', to_document).warm_up()
 
     client_class.assert_called_once_with('env-token', headers={'x-apify-integration-platform': 'haystack'})
 
@@ -201,6 +202,7 @@ def test_task_call_without_input_raises(client: Mock) -> None:
 def test_client_identifies_haystack_integration(component: Callable[[], Any]) -> None:
     """Every component's client sends the Haystack integration header and origin in its user agent."""
     instance = component()
+    instance.warm_up()
 
     headers = instance.client.http_client._headers
 
@@ -218,3 +220,28 @@ def test_actor_call_runs_in_pipeline(client: Mock) -> None:
 
     assert client.actor.return_value.call.call_args.kwargs['run_input'] == {'a': 1}
     assert result == {'loader': {'documents': [to_document(item) for item in ITEMS]}}
+
+
+def test_client_is_created_on_first_run(client_class: Mock) -> None:
+    """The constructor creates no client, and `run` creates one on its first call and reuses it."""
+    loader = ApifyDatasetLoader('dataset-id', to_document)
+    client_class.assert_not_called()
+
+    loader.run()
+    loader.run()
+
+    client_class.assert_called_once()
+    assert loader.client is client_class.return_value
+
+
+def test_close_releases_client(client_class: Mock, client: Mock) -> None:
+    """`close` closes the client's HTTP client, and the next `warm_up` creates a new client."""
+    loader = ApifyDatasetLoader('dataset-id', to_document)
+    loader.warm_up()
+
+    loader.close()
+
+    client.http_client.close.assert_called_once()
+    assert loader.client is None
+    loader.warm_up()
+    assert client_class.call_count == 2
