@@ -133,6 +133,15 @@ unused-ignore-comment = "error"
 [tool.coverage.report]
 exclude_lines = ["pragma: no cover", "if TYPE_CHECKING:", "assert_never()"]
 
+[tool.uv]
+# Minimal defense against supply-chain attacks.
+exclude-newer = "24 hours"
+
+[tool.uv.exclude-newer-package]
+# Allow internal Apify packages to install immediately.
+apify-client = false
+impit = false
+
 # Run tasks with: uv run poe <task>
 [tool.poe.tasks]
 clean = { cmd = "rm -rf .coverage .pytest_cache .ruff_cache .ty_cache build dist htmlcov", help = "Remove build artifacts and clean caches" }
