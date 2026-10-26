@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from datetime import timedelta
+from decimal import Decimal
 from typing import TYPE_CHECKING, Any
 from unittest.mock import AsyncMock, Mock
 
@@ -134,6 +135,7 @@ def test_actor_call_runs_actor_and_loads_its_dataset(client: Mock) -> None:
         build='beta',
         memory_mbytes=512,
         timeout_secs=60,
+        max_total_charge_usd=0.1,
         apify_token=TOKEN,
     )
 
@@ -145,6 +147,7 @@ def test_actor_call_runs_actor_and_loads_its_dataset(client: Mock) -> None:
         build='beta',
         memory_mbytes=512,
         run_timeout=timedelta(seconds=60),
+        max_total_charge_usd=Decimal('0.1'),
     )
     client.dataset.assert_called_once_with('dataset-id')
     assert result == {'documents': [to_document(item) for item in ITEMS]}
@@ -251,6 +254,7 @@ def test_task_call_runs_task_and_loads_its_dataset(client: Mock) -> None:
         build='beta',
         memory_mbytes=512,
         run_timeout=timedelta(seconds=60),
+        max_total_charge_usd=None,
     )
     client.dataset.assert_called_once_with('dataset-id')
     assert result == {'documents': [to_document(item) for item in ITEMS]}
@@ -386,6 +390,7 @@ def test_actor_call_to_dict() -> None:
             'build': 'beta',
             'memory_mbytes': None,
             'timeout_secs': 60,
+            'max_total_charge_usd': None,
             'apify_token': {'type': 'env_var', 'env_vars': ['APIFY_TOKEN', 'APIFY_API_TOKEN'], 'strict': True},
         },
     }
@@ -448,6 +453,7 @@ async def test_actor_call_run_async_runs_actor_and_loads_its_dataset(async_clien
         build='beta',
         memory_mbytes=None,
         run_timeout=timedelta(seconds=60),
+        max_total_charge_usd=None,
     )
     async_client.dataset.assert_called_once_with('dataset-id')
     assert result == {'documents': [to_document(item) for item in ITEMS]}
@@ -464,6 +470,7 @@ async def test_task_call_run_async_runs_task_and_loads_its_dataset(async_client:
         build=None,
         memory_mbytes=512,
         run_timeout=None,
+        max_total_charge_usd=None,
     )
     assert result == {'documents': [to_document(item) for item in ITEMS]}
 

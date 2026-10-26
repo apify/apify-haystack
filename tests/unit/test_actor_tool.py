@@ -137,6 +137,7 @@ def test_invoke_runs_actor_and_returns_dataset_items(client: Mock) -> None:
         build='beta',
         memory_mbytes=512,
         run_timeout=timedelta(seconds=60),
+        max_total_charge_usd=None,
     )
     client.dataset.assert_called_once_with('d')
     client.dataset.return_value.list_items.assert_called_once_with(clean=True, limit=5)
@@ -187,6 +188,7 @@ def test_to_dict() -> None:
             'build': None,
             'memory_mbytes': None,
             'timeout_secs': None,
+            'max_total_charge_usd': None,
             'apify_token': {'type': 'env_var', 'env_vars': ['APIFY_TOKEN', 'APIFY_API_TOKEN'], 'strict': True},
         },
     }

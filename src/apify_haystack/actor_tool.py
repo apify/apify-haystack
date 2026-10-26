@@ -9,7 +9,13 @@ from haystack.core.serialization import generate_qualified_class_name
 from haystack.tools import Tool
 from haystack.utils import Secret, deserialize_secrets_inplace
 
-from apify_haystack._client import _ApifyClientComponent, _create_client, _get_dataset_id, _to_timedelta
+from apify_haystack._client import (
+    _ApifyClientComponent,
+    _create_client,
+    _get_dataset_id,
+    _to_decimal,
+    _to_timedelta,
+)
 
 # OpenAI limits a function name to 64 characters and a description to 1024.
 _MAX_NAME_LENGTH = 64
@@ -58,6 +64,7 @@ class ApifyActorTool(_ApifyClientComponent, Tool):
         build: str | None = None,
         memory_mbytes: int | None = None,
         timeout_secs: int | None = None,
+        max_total_charge_usd: float | None = None,
         apify_token: Secret = Secret.from_env_var(['APIFY_TOKEN', 'APIFY_API_TOKEN']),
     ) -> None:
         """Initialize the Actor tool.
@@ -75,6 +82,8 @@ class ApifyActorTool(_ApifyClientComponent, Tool):
                 It can be either a build tag or build number.
             memory_mbytes (int, optional): Optional memory limit for the run, in megabytes.
             timeout_secs (int, optional): Optional timeout for the run, in seconds.
+            max_total_charge_usd (float, optional): The maximum amount in USD to charge for the run of a pay-per-event
+                Actor. The platform charges no more than that.
             apify_token (Secret, optional): The API token for the Apify platform. Defaults to the
                 `APIFY_TOKEN` environment variable, or the older `APIFY_API_TOKEN`.
         """
@@ -83,6 +92,7 @@ class ApifyActorTool(_ApifyClientComponent, Tool):
         self.build = build
         self.memory_mbytes = memory_mbytes
         self.timeout_secs = timeout_secs
+        self.max_total_charge_usd = max_total_charge_usd
         self.apify_token = apify_token
         self.client = None
         self.async_client = None
@@ -116,6 +126,7 @@ class ApifyActorTool(_ApifyClientComponent, Tool):
                 'build': self.build,
                 'memory_mbytes': self.memory_mbytes,
                 'timeout_secs': self.timeout_secs,
+                'max_total_charge_usd': self.max_total_charge_usd,
                 'apify_token': self.apify_token.to_dict(),
             },
         }
@@ -142,6 +153,7 @@ class ApifyActorTool(_ApifyClientComponent, Tool):
             build=self.build,
             memory_mbytes=self.memory_mbytes,
             run_timeout=_to_timedelta(self.timeout_secs),
+            max_total_charge_usd=_to_decimal(self.max_total_charge_usd),
         )
         dataset_id = _get_dataset_id(run, f'Actor {self.actor_id}')
         return client.dataset(dataset_id).list_items(clean=True, limit=self.dataset_items_limit).items
@@ -153,6 +165,7 @@ class ApifyActorTool(_ApifyClientComponent, Tool):
             build=self.build,
             memory_mbytes=self.memory_mbytes,
             run_timeout=_to_timedelta(self.timeout_secs),
+            max_total_charge_usd=_to_decimal(self.max_total_charge_usd),
         )
         dataset_id = _get_dataset_id(run, f'Actor {self.actor_id}')
         return (await client.dataset(dataset_id).list_items(clean=True, limit=self.dataset_items_limit)).items

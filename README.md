@@ -85,7 +85,7 @@ for document in result['documents']:
 
 ### Give an Agent access to an Actor
 
-`ApifyActorTool` lets a Haystack `Agent` run an Actor. Limit `dataset_items_limit` to keep the tool output within the model's context window:
+`ApifyActorTool` lets a Haystack `Agent` run an Actor. Limit `dataset_items_limit` to keep the tool output within the model's context window. For pay-per-event Actors, `max_total_charge_usd` caps what each run the Agent starts can cost:
 
 ```python
 from haystack.components.agents import Agent
@@ -94,7 +94,7 @@ from haystack.dataclasses import ChatMessage
 
 from apify_haystack import ApifyActorTool
 
-tool = ApifyActorTool('apify/rag-web-browser', dataset_items_limit=3)
+tool = ApifyActorTool('apify/rag-web-browser', dataset_items_limit=3, max_total_charge_usd=0.5)
 agent = Agent(chat_generator=OpenAIChatGenerator(), tools=[tool])
 
 result = agent.run([ChatMessage.from_user('What is new in Haystack 3?')])
