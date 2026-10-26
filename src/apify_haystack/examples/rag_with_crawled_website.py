@@ -23,7 +23,7 @@ import os
 from haystack import Document, Pipeline
 from haystack.components.builders import PromptBuilder
 from haystack.components.embedders import OpenAIDocumentEmbedder, OpenAITextEmbedder
-from haystack.components.generators import OpenAIGenerator
+from haystack.components.generators.chat import OpenAIChatGenerator
 from haystack.components.retrievers.in_memory import InMemoryEmbeddingRetriever
 from haystack.document_stores.in_memory import InMemoryDocumentStore
 
@@ -57,13 +57,13 @@ document_store = InMemoryDocumentStore()
 docs_embedder = OpenAIDocumentEmbedder()
 text_embedder = OpenAITextEmbedder()
 retriever = InMemoryEmbeddingRetriever(document_store)
-generator = OpenAIGenerator(model='gpt-3.5-turbo')
+generator = OpenAIChatGenerator()
 
 # Load documents from Apify
 print('Crawling will take some time ...')
 print('You can visit https://console.apify.com/actors/runs to monitor the progress')
 docs = apify_dataset_loader.run()
-embeddings = docs_embedder.run(docs.get('documents'))
+embeddings = docs_embedder.run(docs['documents'])
 document_store.write_documents(embeddings['documents'])
 
 template = """
@@ -91,7 +91,7 @@ pipe.add_component('llm', generator)
 # Now, connect the components to each other
 pipe.connect('embedder.embedding', 'retriever.query_embedding')
 pipe.connect('retriever', 'prompt_builder.documents')
-pipe.connect('prompt_builder', 'llm')
+pipe.connect('prompt_builder.prompt', 'llm.messages')
 
 question = 'What is haystack?'
 
@@ -99,7 +99,7 @@ question = 'What is haystack?'
 response = pipe.run({'embedder': {'text': question}, 'prompt_builder': {'question': question}})
 
 print(f'question: {question}')
-print(f'answer: {response["llm"]["replies"][0]}')
+print(f'answer: {response["llm"]["replies"][0].text}')
 
 # Other questions
 examples = [
@@ -110,4 +110,4 @@ examples = [
 for example in examples:
     response = pipe.run({'embedder': {'text': example}, 'prompt_builder': {'question': example}})
     print(f'question: {question}')
-    print(f'answer: {response["llm"]["replies"][0]}')
+    print(f'answer: {response["llm"]["replies"][0].text}')

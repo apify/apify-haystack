@@ -42,7 +42,7 @@ actor = ApifyDatasetFromActorCall(
 print(f'Calling the Apify actor {actor_id} ... crawling will take some time ...')
 print('You can monitor the progress at: https://console.apify.com/actors/runs')
 
-dataset = actor.run().get('documents')
+dataset = actor.run()['documents']
 
 print(f'Loaded {len(dataset)} documents from the Apify Actor {actor_id}:')
 for d in dataset:

@@ -24,7 +24,7 @@ def dataset_mapping_function(dataset_item: dict) -> Document:
 
 
 loader = ApifyDatasetLoader(dataset_id=dataset_id, dataset_mapping_function=dataset_mapping_function)
-dataset = loader.run().get('documents')
+dataset = loader.run()['documents']
 
 print(f'Loaded {len(dataset)} documents from Apify dataset {dataset_id}:')
 for d in dataset:
