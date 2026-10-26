@@ -1,12 +1,12 @@
 from __future__ import annotations
 
-import os
 from datetime import timedelta
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any, Self
 
 from apify_client import ApifyClient
-from haystack import component
+from haystack import component, default_from_dict, default_to_dict
 from haystack.dataclasses import Document
+from haystack.utils import Secret, deserialize_callable, serialize_callable
 
 from apify_haystack.constants import HAYSTACK_ATTRIBUTE_USER_AGENT, HAYSTACK_INTEGRATION_PLATFORM
 
@@ -17,6 +17,7 @@ if TYPE_CHECKING:
 class _ApifyClientComponent:
     """Base for the components that call the Apify API. The client lives between `warm_up` and `close`."""
 
+    apify_api_token: Secret
     client: ApifyClient | None
 
     def warm_up(self) -> None:
@@ -31,11 +32,16 @@ class _ApifyClientComponent:
 
     def _get_client(self) -> ApifyClient:
         if self.client is None:
-            self.client = _create_client(self._resolve_token())
+            self.client = _create_client(self.apify_api_token.resolve_value())
         return self.client
 
-    def _resolve_token(self) -> str | None:
-        return None
+    @classmethod
+    def from_dict(cls, data: dict[str, Any]) -> Self:
+        """Deserialize the component from a dictionary created by `to_dict`."""
+        init_parameters = data['init_parameters']
+        mapping_function = deserialize_callable(init_parameters['dataset_mapping_function'])
+        data = {**data, 'init_parameters': {**init_parameters, 'dataset_mapping_function': mapping_function}}
+        return default_from_dict(cls, data)
 
 
 @component
@@ -63,22 +69,36 @@ class ApifyDatasetLoader(_ApifyClientComponent):
         self,
         dataset_id: str,
         dataset_mapping_function: Callable[[dict], Document],
+        *,
+        apify_api_token: Secret = Secret.from_env_var('APIFY_API_TOKEN', strict=False),
     ) -> None:
         """Initialize the Apify dataset loader.
 
         Args:
             dataset_id (str): The ID of the dataset on the Apify platform.
-            dataset_mapping_function (Callable): A function that takes a single (an Apify dataset item) and converts
-                it to an instance of the Document class.
+            dataset_mapping_function (Callable): A function that takes a single dictionary (an Apify dataset item)
+                and converts it to an instance of the Document class.
+            apify_api_token (Secret, optional): The API token for the Apify platform. Defaults to the
+                `APIFY_API_TOKEN` environment variable. Without a token, only public datasets can be loaded.
         """
         self.dataset_id = dataset_id
         self.dataset_mapping_function = dataset_mapping_function
+        self.apify_api_token = apify_api_token
         self.client = None
 
     @component.output_types(documents=list[Document])
     def run(self) -> dict[str, list[Document]]:
         """Load datasets produced by the `Apify Actors`."""
         return {'documents': _load_documents(self._get_client(), self.dataset_id, self.dataset_mapping_function)}
+
+    def to_dict(self) -> dict[str, Any]:
+        """Serialize the component to a dictionary."""
+        return default_to_dict(
+            self,
+            dataset_id=self.dataset_id,
+            dataset_mapping_function=serialize_callable(self.dataset_mapping_function),
+            apify_api_token=self.apify_api_token,
+        )
 
 
 @component
@@ -88,9 +108,8 @@ class ApifyDatasetFromActorCall(_ApifyClientComponent):
     Perform call of Apify Actor and load produced dataset.
     For details, see https://docs.apify.com/platform/integrations/haystack
 
-    To use it, you should have the ``apify-client`` python package installed,
-    and the environment variable ``APIFY_API_TOKEN`` set with your API key, or pass
-    `apify_api_token` as a named parameter to the constructor.
+    It needs an Apify API token, read from the `APIFY_API_TOKEN` environment variable by default, or passed as
+    `apify_api_token`.
     """
 
     def __init__(
@@ -102,7 +121,7 @@ class ApifyDatasetFromActorCall(_ApifyClientComponent):
         build: str | None = None,
         memory_mbytes: int | None = None,
         timeout_secs: int | None = None,
-        apify_api_token: str | None = None,
+        apify_api_token: Secret = Secret.from_env_var('APIFY_API_TOKEN'),
     ) -> None:
         """Initialize the Apify Actor loader.
 
@@ -118,8 +137,8 @@ class ApifyDatasetFromActorCall(_ApifyClientComponent):
                 It can be either a build tag or build number.
             memory_mbytes (int, optional): Optional memory limit for the run, in megabytes.
             timeout_secs (int, optional): Optional timeout for the run, in seconds.
-            apify_api_token (str, optional): The API token for the Apify platform.
-                If not provided, it will be read from the environment
+            apify_api_token (Secret, optional): The API token for the Apify platform. Defaults to the
+                `APIFY_API_TOKEN` environment variable.
         """
         self.actor_id = actor_id
         self.dataset_mapping_function = dataset_mapping_function
@@ -163,8 +182,18 @@ class ApifyDatasetFromActorCall(_ApifyClientComponent):
 
         return {'documents': _load_documents(client, run.default_dataset_id, self.dataset_mapping_function)}
 
-    def _resolve_token(self) -> str:
-        return _require_token(self.apify_api_token, type(self).__name__)
+    def to_dict(self) -> dict[str, Any]:
+        """Serialize the component to a dictionary."""
+        return default_to_dict(
+            self,
+            actor_id=self.actor_id,
+            dataset_mapping_function=serialize_callable(self.dataset_mapping_function),
+            run_input=self.run_input,
+            build=self.build,
+            memory_mbytes=self.memory_mbytes,
+            timeout_secs=self.timeout_secs,
+            apify_api_token=self.apify_api_token,
+        )
 
 
 @component
@@ -183,7 +212,7 @@ class ApifyDatasetFromTaskCall(_ApifyClientComponent):
         build: str | None = None,
         memory_mbytes: int | None = None,
         timeout_secs: int | None = None,
-        apify_api_token: str | None = None,
+        apify_api_token: Secret = Secret.from_env_var('APIFY_API_TOKEN'),
     ) -> None:
         """Initialize the Apify Actor loader.
 
@@ -199,8 +228,8 @@ class ApifyDatasetFromTaskCall(_ApifyClientComponent):
                 It can be either a build tag or build number.
             memory_mbytes (int, optional): Optional memory limit for the run, in megabytes.
             timeout_secs (int, optional): Optional timeout for the run, in seconds.
-            apify_api_token (str, optional): The API token for the Apify platform.
-                If not provided, it will be read from the environment
+            apify_api_token (Secret, optional): The API token for the Apify platform. Defaults to the
+                `APIFY_API_TOKEN` environment variable.
         """
         self.task_id = task_id
         self.dataset_mapping_function = dataset_mapping_function
@@ -235,23 +264,24 @@ class ApifyDatasetFromTaskCall(_ApifyClientComponent):
 
         return {'documents': _load_documents(client, run.default_dataset_id, self.dataset_mapping_function)}
 
-    def _resolve_token(self) -> str:
-        return _require_token(self.apify_api_token, type(self).__name__)
+    def to_dict(self) -> dict[str, Any]:
+        """Serialize the component to a dictionary."""
+        return default_to_dict(
+            self,
+            task_id=self.task_id,
+            dataset_mapping_function=serialize_callable(self.dataset_mapping_function),
+            task_input=self.task_input,
+            build=self.build,
+            memory_mbytes=self.memory_mbytes,
+            timeout_secs=self.timeout_secs,
+            apify_api_token=self.apify_api_token,
+        )
 
 
 def _merge_inputs(input1: dict | None, input2: dict | None) -> dict | None:
     if input1 and input2:
         return input1 | input2
     return input1 or input2
-
-
-def _require_token(token: str | None, component_name: str) -> str:
-    if not (token := token or os.getenv('APIFY_API_TOKEN')):
-        raise ValueError(
-            f'Apify API token not found. Please provide Apify API token when initializing {component_name}, '
-            'or set the environment variable APIFY_API_TOKEN.'
-        )
-    return token
 
 
 def _create_client(token: str | None = None) -> ApifyClient:
