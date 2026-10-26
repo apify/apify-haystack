@@ -46,7 +46,7 @@ class _ApifyClientComponent:
 
 @component
 class ApifyDatasetLoader(_ApifyClientComponent):
-    """Load datasets produced by `Apify Actors`.
+    """Load datasets produced by Apify Actors.
 
     Actors are serverless functions that can be used to scrape, crawl, and extract data from the web.
     For details, see https://docs.apify.com/platform/integrations/haystack
@@ -88,7 +88,7 @@ class ApifyDatasetLoader(_ApifyClientComponent):
 
     @component.output_types(documents=list[Document])
     def run(self) -> dict[str, list[Document]]:
-        """Load datasets produced by the `Apify Actors`."""
+        """Load the dataset produced by an Apify Actor."""
         return {'documents': _load_documents(self._get_client(), self.dataset_id, self.dataset_mapping_function)}
 
     def to_dict(self) -> dict[str, Any]:
@@ -105,7 +105,7 @@ class ApifyDatasetLoader(_ApifyClientComponent):
 class ApifyDatasetFromActorCall(_ApifyClientComponent):
     """Get an Apify dataset by calling an Apify Actor.
 
-    Perform call of Apify Actor and load produced dataset.
+    Perform a call of an Apify Actor and load the produced dataset.
     For details, see https://docs.apify.com/platform/integrations/haystack
 
     It needs an Apify API token, read from the `APIFY_API_TOKEN` environment variable by default, or passed as
@@ -127,13 +127,12 @@ class ApifyDatasetFromActorCall(_ApifyClientComponent):
 
         Args:
             actor_id (str): The ID or name of the Actor on the Apify platform.
-            dataset_mapping_function (Callable): A function that takes a single
-                dictionary (an Apify dataset item) and converts it to an
-                instance of the Document class.
+            dataset_mapping_function (Callable): A function that takes a single dictionary (an Apify dataset item)
+                and converts it to an instance of the Document class.
             run_input (dict, optional): The input parameters for the Actor you want to run. This can be provided
                 either in the `run` method or during the class instantiation. If specified in both places,
                 the inputs are merged and the values from `run` take precedence.
-            build (str, optional): Optionally specifies the actor build to run.
+            build (str, optional): Optionally specifies the Actor build to run.
                 It can be either a build tag or build number.
             memory_mbytes (int, optional): Optional memory limit for the run, in megabytes.
             timeout_secs (int, optional): Optional timeout for the run, in seconds.
@@ -163,9 +162,10 @@ class ApifyDatasetFromActorCall(_ApifyClientComponent):
 
                 actor = ApifyDatasetFromActorCall(
                     actor_id="apify/website-content-crawler",
-                    run_input={ "maxCrawlPages": 5 }
+                    dataset_mapping_function=lambda item: Document(content=item.get("text")),
+                    run_input={"maxCrawlPages": 5},
                 )
-                dataset = actor.run(run_input={ "startUrls": [{"url": "https://haystack.deepset.ai/"}] })
+                dataset = actor.run(run_input={"startUrls": [{"url": "https://haystack.deepset.ai/"}]})
         """
         if not (run_input := _merge_inputs(self.run_input, run_input)):
             raise ValueError('Please provide the run_input either in the constructor or in the run method.')
@@ -201,6 +201,10 @@ class ApifyDatasetFromTaskCall(_ApifyClientComponent):
     """Get an Apify dataset by calling an Apify task.
 
     Perform a call of an Apify task and load the produced dataset.
+    For details, see https://docs.apify.com/platform/integrations/haystack
+
+    It needs an Apify API token, read from the `APIFY_API_TOKEN` environment variable by default, or passed as
+    `apify_api_token`.
     """
 
     def __init__(
@@ -214,14 +218,13 @@ class ApifyDatasetFromTaskCall(_ApifyClientComponent):
         timeout_secs: int | None = None,
         apify_api_token: Secret = Secret.from_env_var('APIFY_API_TOKEN'),
     ) -> None:
-        """Initialize the Apify Actor loader.
+        """Initialize the Apify task loader.
 
         Args:
-            task_id (str): The ID or name of the Actor on the Apify platform.
-            dataset_mapping_function (Callable): A function that takes a single
-                dictionary (an Apify dataset item) and converts it to an
-                instance of the Document class.
-            task_input (dict, optional): The input parameters for the Actor you want to run. This can be provided
+            task_id (str): The ID or name of the task on the Apify platform.
+            dataset_mapping_function (Callable): A function that takes a single dictionary (an Apify dataset item)
+                and converts it to an instance of the Document class.
+            task_input (dict, optional): The input parameters for the task you want to run. This can be provided
                 either in the `run` method or during the class instantiation. If specified in both places,
                 the inputs are merged and the values from `run` take precedence.
             build (str, optional): Optionally specifies the Actor build to run.
@@ -242,10 +245,10 @@ class ApifyDatasetFromTaskCall(_ApifyClientComponent):
 
     @component.output_types(documents=list[Document])
     def run(self, task_input: dict | None = None) -> dict[str, list[Document]]:
-        """Run an Actor on the Apify platform and wait for results to be ready.
+        """Run a task on the Apify platform and wait for results to be ready.
 
         Args:
-            task_input (dict, optional): The input parameters for the Actor you want to run. This can be provided
+            task_input (dict, optional): The input parameters for the task you want to run. This can be provided
                 either in the `run` method or during the class instantiation. If specified in both places,
                 the inputs are merged and the values from `run` take precedence.
         """
