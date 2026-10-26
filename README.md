@@ -25,7 +25,7 @@ pip install apify-haystack
 - `ApifyDatasetFromTaskCall` does the same for a saved Actor task.
 - `ApifyDatasetLoader` loads an existing dataset by its ID.
 - `ApifyWebSearch` searches the web with the [RAG Web Browser](https://apify.com/apify/rag-web-browser) Actor and returns the content of the top result pages.
-- `ApifyActorTool` is a tool for Haystack Agents that runs any Actor and returns its dataset items. It takes its parameters from the Actor's input schema.
+- `ApifyActorTool` is a tool for Haystack Agents that runs any Actor and returns its dataset items. It takes its parameters from the Actor's input schema, and it marks the items it hands to the LLM as untrusted external content to guard against prompt injection.
 
 The dataset components turn dataset items into Haystack `Document` objects with a mapping function. Without one, they use `default_dataset_mapping_function`, which takes the `markdown` or `text` of website and search Actors with the page `url`, `title`, and `description` as `meta`, and the whole item as JSON for other Actors. Every component also has `run_async`, which `Pipeline.run_async` uses to run it without blocking the event loop. When an Actor or task run finishes with any status other than `SUCCEEDED`, the component raises a `RuntimeError` instead of loading a partial dataset.
 
