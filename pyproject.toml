@@ -111,6 +111,9 @@ indent-style = "space"
 docstring-quotes = "double"
 inline-quotes = "single"
 
+[tool.ruff.lint.flake8-bugbear]
+extend-immutable-calls = ["haystack.utils.Secret.from_env_var"]
+
 [tool.ruff.lint.isort]
 known-local-folder = ["apify_haystack"]
 
