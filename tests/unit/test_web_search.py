@@ -34,7 +34,9 @@ DOCUMENTS = [
 def client(monkeypatch: pytest.MonkeyPatch) -> Mock:
     client = Mock()
     client.http_client._headers = {'User-Agent': 'ApifyClient/test'}
-    client.actor.return_value.call.return_value = Mock(spec=Run, default_dataset_id='dataset-id')
+    client.actor.return_value.call.return_value = Mock(
+        spec=Run, id='run-id', status='SUCCEEDED', default_dataset_id='dataset-id'
+    )
     client.dataset.return_value.list_items.return_value.items = ITEMS
     monkeypatch.setattr(apify_dataset, 'ApifyClient', Mock(return_value=client))
     return client
@@ -44,7 +46,9 @@ def client(monkeypatch: pytest.MonkeyPatch) -> Mock:
 def async_client(monkeypatch: pytest.MonkeyPatch) -> Mock:
     client = Mock()
     client.http_client._headers = {'User-Agent': 'ApifyClient/test'}
-    client.actor.return_value.call = AsyncMock(return_value=Mock(spec=Run, default_dataset_id='dataset-id'))
+    client.actor.return_value.call = AsyncMock(
+        return_value=Mock(spec=Run, id='run-id', status='SUCCEEDED', default_dataset_id='dataset-id')
+    )
     client.dataset.return_value.list_items = AsyncMock(return_value=Mock(items=ITEMS))
     monkeypatch.setattr(apify_dataset, 'ApifyClientAsync', Mock(return_value=client))
     return client
@@ -93,6 +97,16 @@ def test_run_without_run_raises(client: Mock) -> None:
 
     with pytest.raises(ValueError, match='No response found'):
         ApifyWebSearch(apify_token=TOKEN).run(query='haystack')
+
+
+def test_unsuccessful_run_raises(client: Mock) -> None:
+    """A search run that does not succeed raises a `RuntimeError` with its status."""
+    client.actor.return_value.call.return_value = Mock(spec=Run, id='run-id', status='TIMED-OUT')
+
+    with pytest.raises(RuntimeError, match='apify/rag-web-browser run run-id finished with status TIMED-OUT'):
+        ApifyWebSearch(apify_token=TOKEN).run(query='haystack')
+
+    client.dataset.assert_not_called()
 
 
 @pytest.mark.parametrize(

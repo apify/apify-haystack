@@ -13,6 +13,8 @@ from apify_haystack.constants import HAYSTACK_ATTRIBUTE_USER_AGENT, HAYSTACK_INT
 if TYPE_CHECKING:
     from collections.abc import Callable
 
+    from apify_client._models import Run
+
 _ClientT = TypeVar('_ClientT', ApifyClient, ApifyClientAsync)
 
 
@@ -207,10 +209,8 @@ class ApifyDatasetFromActorCall(_ApifyClientComponent):
             memory_mbytes=self.memory_mbytes,
             run_timeout=_to_timedelta(self.timeout_secs),
         )
-        if run is None:
-            raise ValueError(f'No response found in the Actor {self.actor_id} call')
-
-        return {'documents': _load_documents(client, run.default_dataset_id, self.dataset_mapping_function)}
+        dataset_id = _get_dataset_id(run, f'Actor {self.actor_id}')
+        return {'documents': _load_documents(client, dataset_id, self.dataset_mapping_function)}
 
     @component.output_types(documents=list[Document])
     async def run_async(self, run_input: dict | None = None) -> dict[str, list[Document]]:
@@ -231,10 +231,8 @@ class ApifyDatasetFromActorCall(_ApifyClientComponent):
             memory_mbytes=self.memory_mbytes,
             run_timeout=_to_timedelta(self.timeout_secs),
         )
-        if run is None:
-            raise ValueError(f'No response found in the Actor {self.actor_id} call')
-
-        documents = await _load_documents_async(client, run.default_dataset_id, self.dataset_mapping_function)
+        dataset_id = _get_dataset_id(run, f'Actor {self.actor_id}')
+        documents = await _load_documents_async(client, dataset_id, self.dataset_mapping_function)
         return {'documents': documents}
 
     def to_dict(self) -> dict[str, Any]:
@@ -318,10 +316,8 @@ class ApifyDatasetFromTaskCall(_ApifyClientComponent):
             memory_mbytes=self.memory_mbytes,
             run_timeout=_to_timedelta(self.timeout_secs),
         )
-        if run is None:
-            raise ValueError(f'No response found in the task {self.task_id} call')
-
-        return {'documents': _load_documents(client, run.default_dataset_id, self.dataset_mapping_function)}
+        dataset_id = _get_dataset_id(run, f'task {self.task_id}')
+        return {'documents': _load_documents(client, dataset_id, self.dataset_mapping_function)}
 
     @component.output_types(documents=list[Document])
     async def run_async(self, task_input: dict | None = None) -> dict[str, list[Document]]:
@@ -342,10 +338,8 @@ class ApifyDatasetFromTaskCall(_ApifyClientComponent):
             memory_mbytes=self.memory_mbytes,
             run_timeout=_to_timedelta(self.timeout_secs),
         )
-        if run is None:
-            raise ValueError(f'No response found in the task {self.task_id} call')
-
-        documents = await _load_documents_async(client, run.default_dataset_id, self.dataset_mapping_function)
+        dataset_id = _get_dataset_id(run, f'task {self.task_id}')
+        documents = await _load_documents_async(client, dataset_id, self.dataset_mapping_function)
         return {'documents': documents}
 
     def to_dict(self) -> dict[str, Any]:
@@ -366,6 +360,15 @@ def _merge_inputs(input1: dict | None, input2: dict | None) -> dict | None:
     if input1 and input2:
         return input1 | input2
     return input1 or input2
+
+
+def _get_dataset_id(run: Run | None, label: str) -> str:
+    """Return the default dataset of a finished run, raising unless the run succeeded."""
+    if run is None:
+        raise ValueError(f'No response found in the {label} call')
+    if run.status != 'SUCCEEDED':
+        raise RuntimeError(f'The {label} run {run.id} finished with status {run.status}.')
+    return run.default_dataset_id
 
 
 def _create_client(client_class: type[_ClientT], token: str | None) -> _ClientT:

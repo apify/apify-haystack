@@ -31,8 +31,12 @@ def client_class(monkeypatch: pytest.MonkeyPatch) -> Mock:
     client = Mock()
     client.http_client._headers = {'User-Agent': 'ApifyClient/test'}
     client.dataset.return_value.list_items.return_value.items = ITEMS
-    client.actor.return_value.call.return_value = Mock(spec=Run, default_dataset_id='dataset-id')
-    client.task.return_value.call.return_value = Mock(spec=Run, default_dataset_id='dataset-id')
+    client.actor.return_value.call.return_value = Mock(
+        spec=Run, id='run-id', status='SUCCEEDED', default_dataset_id='dataset-id'
+    )
+    client.task.return_value.call.return_value = Mock(
+        spec=Run, id='run-id', status='SUCCEEDED', default_dataset_id='dataset-id'
+    )
     client_class = Mock(return_value=client)
     monkeypatch.setattr(apify_dataset, 'ApifyClient', client_class)
     return client_class
@@ -49,8 +53,12 @@ def async_client_class(monkeypatch: pytest.MonkeyPatch) -> Mock:
     client.http_client._headers = {'User-Agent': 'ApifyClient/test'}
     client.http_client.aclose = AsyncMock()
     client.dataset.return_value.list_items = AsyncMock(return_value=Mock(items=ITEMS))
-    client.actor.return_value.call = AsyncMock(return_value=Mock(spec=Run, default_dataset_id='dataset-id'))
-    client.task.return_value.call = AsyncMock(return_value=Mock(spec=Run, default_dataset_id='dataset-id'))
+    client.actor.return_value.call = AsyncMock(
+        return_value=Mock(spec=Run, id='run-id', status='SUCCEEDED', default_dataset_id='dataset-id')
+    )
+    client.task.return_value.call = AsyncMock(
+        return_value=Mock(spec=Run, id='run-id', status='SUCCEEDED', default_dataset_id='dataset-id')
+    )
     async_client_class = Mock(return_value=client)
     monkeypatch.setattr(apify_dataset, 'ApifyClientAsync', async_client_class)
     return async_client_class
@@ -162,6 +170,50 @@ def test_actor_call_without_run_raises(client: Mock) -> None:
 
     with pytest.raises(ValueError, match='No response found'):
         actor.run()
+
+
+@pytest.mark.parametrize(
+    'status',
+    [
+        pytest.param('FAILED', id='failed'),
+        pytest.param('TIMED-OUT', id='timed out'),
+        pytest.param('ABORTED', id='aborted'),
+    ],
+)
+@pytest.mark.parametrize(
+    ('component', 'resource'),
+    [
+        pytest.param(
+            lambda: ApifyDatasetFromActorCall('actor-id', to_document, run_input={'a': 1}, apify_token=TOKEN),
+            'actor',
+            id='actor call',
+        ),
+        pytest.param(
+            lambda: ApifyDatasetFromTaskCall('task-id', to_document, task_input={'a': 1}, apify_token=TOKEN),
+            'task',
+            id='task call',
+        ),
+    ],
+)
+def test_unsuccessful_run_raises(client: Mock, component: Callable[[], Any], resource: str, status: str) -> None:
+    """A run that does not succeed raises a `RuntimeError` with its status and loads no dataset."""
+    getattr(client, resource).return_value.call.return_value = Mock(spec=Run, id='run-id', status=status)
+
+    with pytest.raises(RuntimeError, match=f'run run-id finished with status {status}'):
+        component().run()
+
+    client.dataset.assert_not_called()
+
+
+async def test_unsuccessful_run_async_raises(async_client: Mock) -> None:
+    """In `run_async`, a run that does not succeed raises a `RuntimeError` with its status."""
+    async_client.actor.return_value.call.return_value = Mock(spec=Run, id='run-id', status='FAILED')
+    actor = ApifyDatasetFromActorCall('actor-id', to_document, run_input={'a': 1}, apify_token=TOKEN)
+
+    with pytest.raises(RuntimeError, match='Actor actor-id run run-id finished with status FAILED'):
+        await actor.run_async()
+
+    async_client.dataset.assert_not_called()
 
 
 def test_actor_call_without_timeout_passes_no_run_timeout(client: Mock) -> None:

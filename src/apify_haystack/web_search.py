@@ -6,7 +6,7 @@ from haystack import component, default_from_dict, default_to_dict
 from haystack.dataclasses import Document
 from haystack.utils import Secret
 
-from apify_haystack.apify_dataset import _ApifyClientComponent, _to_timedelta
+from apify_haystack.apify_dataset import _ApifyClientComponent, _get_dataset_id, _to_timedelta
 
 RAG_WEB_BROWSER_ACTOR_ID = 'apify/rag-web-browser'
 
@@ -72,10 +72,8 @@ class ApifyWebSearch(_ApifyClientComponent):
             run_input=self._run_input(query),
             run_timeout=_to_timedelta(self.timeout_secs),
         )
-        if run is None:
-            raise ValueError(f'No response found in the Actor {RAG_WEB_BROWSER_ACTOR_ID} call')
-
-        items = client.dataset(run.default_dataset_id).list_items(clean=True).items
+        dataset_id = _get_dataset_id(run, f'Actor {RAG_WEB_BROWSER_ACTOR_ID}')
+        items = client.dataset(dataset_id).list_items(clean=True).items
         return _to_output(items)
 
     @component.output_types(documents=list[Document], links=list[str])
@@ -90,10 +88,8 @@ class ApifyWebSearch(_ApifyClientComponent):
             run_input=self._run_input(query),
             run_timeout=_to_timedelta(self.timeout_secs),
         )
-        if run is None:
-            raise ValueError(f'No response found in the Actor {RAG_WEB_BROWSER_ACTOR_ID} call')
-
-        items = (await client.dataset(run.default_dataset_id).list_items(clean=True)).items
+        dataset_id = _get_dataset_id(run, f'Actor {RAG_WEB_BROWSER_ACTOR_ID}')
+        items = (await client.dataset(dataset_id).list_items(clean=True)).items
         return _to_output(items)
 
     def to_dict(self) -> dict[str, Any]:
