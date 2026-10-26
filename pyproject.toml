@@ -25,7 +25,6 @@ keywords = ["apify", "crawler", "haystack", "rag", "scraper", "scraping"]
 dependencies = [
     "apify-client>=3.3.0,<4.0.0",
     "haystack-ai>=3.0.0,<4.0.0",
-    "python-dotenv>=1.0.1,<2.0.0",
 ]
 
 [project.urls]
@@ -128,7 +127,7 @@ timeout = 1800
 python-version = "3.11"
 
 [tool.ty.src]
-include = ["src", "tests"]
+include = ["src", "tests", "examples"]
 
 [tool.ty.rules]
 unused-ignore-comment = "error"
