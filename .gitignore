@@ -8,7 +8,6 @@ __pycache__
 .envrc
 .python-version
 
-
 *.egg-info/
 *.egg
 dist/

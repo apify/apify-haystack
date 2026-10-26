@@ -26,7 +26,7 @@ To run all code checks (lint, type check, and unit tests), run:
 uv run poe check-code
 ```
 
-We use [ruff](https://docs.astral.sh/ruff/) for linting and formatting [ty](https://docs.astral.sh/ty/) for type checking, and [pytest](https://docs.pytest.org/) for tests. All of them are configured in `pyproject.toml`, and each has its own task (`lint`, `format`, `type-check`, `unit-tests`).
+We use [ruff](https://docs.astral.sh/ruff/) for linting and formatting, [ty](https://docs.astral.sh/ty/) for type checking, and [pytest](https://docs.pytest.org/) for tests. All of them are configured in `pyproject.toml`, and each has its own task (`lint`, `format`, `type-check`, `unit-tests`).
 
 ## Tests
 

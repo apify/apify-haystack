@@ -36,7 +36,7 @@ dependencies = [
 
 [dependency-groups]
 dev = [
-        "poethepoet<1.0.0",
+    "poethepoet<1.0.0",
     "pre-commit<5.0.0",
     "pytest-cov<8.0.0",
     "pytest-xdist<4.0.0",
