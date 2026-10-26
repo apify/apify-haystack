@@ -184,6 +184,15 @@ def test_task_call_uses_run_input(
     assert client.task.return_value.call.call_args.kwargs['task_input'] == expected_input
 
 
+def test_task_call_without_run_raises(client: Mock) -> None:
+    """A task run missing from the response raises a `ValueError`."""
+    client.task.return_value.call.return_value = None
+    task = ApifyDatasetFromTaskCall('task-id', to_document, task_input={'a': 1}, apify_api_token=TOKEN)
+
+    with pytest.raises(ValueError, match='No response found'):
+        task.run()
+
+
 def test_task_call_without_input_raises(client: Mock) -> None:
     """Running a task without input in either the constructor or `run` raises a `ValueError`."""
     task = ApifyDatasetFromTaskCall('task-id', to_document, apify_api_token=TOKEN)
@@ -299,6 +308,7 @@ def test_from_dict_restores_component(monkeypatch: pytest.MonkeyPatch, component
 
     assert restored.to_dict() == component.to_dict()
     assert restored.dataset_mapping_function is to_document
+    assert isinstance(restored.apify_api_token, Secret)
 
 
 def test_pipeline_round_trips_through_yaml() -> None:
