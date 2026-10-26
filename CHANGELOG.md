@@ -1,5 +1,44 @@
 # Changelog
 
+All notable changes to this project will be documented in this file.
+
+<!-- git-cliff-unreleased-start -->
+## 0.1.8 - **not yet released**
+
+### 🚀 Features
+
+- Add support for Python 3.14 ([#36](https://github.com/apify/apify-haystack/pull/36)) ([fe4abac](https://github.com/apify/apify-haystack/commit/fe4abacc1511b1cbd40d98cd9b5d57ef3b9dcb5a)) by [@vdusek](https://github.com/vdusek)
+- [**breaking**] Migrate to apify-client 3.x ([#47](https://github.com/apify/apify-haystack/pull/47)) ([8358f91](https://github.com/apify/apify-haystack/commit/8358f915c9b320206e7c11b08a4e64d28bac5aad)) by [@vdusek](https://github.com/vdusek), closes [#28](https://github.com/apify/apify-haystack/issues/28)
+- [**breaking**] Migrate to Haystack 3.x ([#39](https://github.com/apify/apify-haystack/pull/39)) ([783706e](https://github.com/apify/apify-haystack/commit/783706eb07e0365efc7f9831de46115028add91f)) by [@vdusek](https://github.com/vdusek)
+- [**breaking**] Create the Apify client in `warm_up` and release it in `close` ([#41](https://github.com/apify/apify-haystack/pull/41)) ([405455c](https://github.com/apify/apify-haystack/commit/405455cba9fcfea6c780c315d5634ee783780029)) by [@vdusek](https://github.com/vdusek)
+- [**breaking**] Take the API token as a Haystack `Secret` and support component serialization ([#42](https://github.com/apify/apify-haystack/pull/42)) ([f52c359](https://github.com/apify/apify-haystack/commit/f52c35978a86dd69cd4d478d396b052ee76b0853)) by [@vdusek](https://github.com/vdusek)
+- Add async support to the components ([#57](https://github.com/apify/apify-haystack/pull/57)) ([3d15741](https://github.com/apify/apify-haystack/commit/3d15741496cdca24441f93806a3bb2d3d61f0e6c)) by [@vdusek](https://github.com/vdusek)
+- Add ApifyWebSearch component ([#58](https://github.com/apify/apify-haystack/pull/58)) ([974f861](https://github.com/apify/apify-haystack/commit/974f8616c1632ccf8bf444e2567534bb1371a936)) by [@vdusek](https://github.com/vdusek)
+- Add ApifyActorTool for Haystack Agents ([#59](https://github.com/apify/apify-haystack/pull/59)) ([96cfedc](https://github.com/apify/apify-haystack/commit/96cfedcb798f59b17f1b97e116e697065020745c)) by [@vdusek](https://github.com/vdusek)
+- [**breaking**] Rename the token parameter to apify_token and read APIFY_TOKEN ([#62](https://github.com/apify/apify-haystack/pull/62)) ([8db8ce3](https://github.com/apify/apify-haystack/commit/8db8ce3bb25dd24add347deec7d5d67b7b6369a8)) by [@vdusek](https://github.com/vdusek)
+- Add a default dataset mapping function ([#64](https://github.com/apify/apify-haystack/pull/64)) ([c25c9a3](https://github.com/apify/apify-haystack/commit/c25c9a3160ca7425737abd52986d756d009df9d8)) by [@vdusek](https://github.com/vdusek)
+- Mark ApifyActorTool output as untrusted external content ([#65](https://github.com/apify/apify-haystack/pull/65)) ([ee93080](https://github.com/apify/apify-haystack/commit/ee930801ccf7ac88ed77be9c27b9dea57a02c038)) by [@vdusek](https://github.com/vdusek)
+- Add a max_total_charge_usd limit to the Actor runs ([#70](https://github.com/apify/apify-haystack/pull/70)) ([83a8184](https://github.com/apify/apify-haystack/commit/83a81847cc4050cabd44183979440ab944350d95)) by [@vdusek](https://github.com/vdusek)
+
+### 🐛 Bug Fixes
+
+- Respect input passed to `run` in Actor and task calls ([#33](https://github.com/apify/apify-haystack/pull/33)) ([78a3882](https://github.com/apify/apify-haystack/commit/78a388256a8230d397b135bca4c3d0cbce9c16da)) by [@vdusek](https://github.com/vdusek)
+- [**breaking**] Raise when an Actor or task run does not succeed ([#63](https://github.com/apify/apify-haystack/pull/63)) ([46ef2f2](https://github.com/apify/apify-haystack/commit/46ef2f29aeecda69ab6155eaa76b423fb1b4d28c)) by [@vdusek](https://github.com/vdusek)
+
+### 🚜 Refactor
+
+- [**breaking**] Make the constants module private ([#68](https://github.com/apify/apify-haystack/pull/68)) ([8f5dbbd](https://github.com/apify/apify-haystack/commit/8f5dbbd7a4fa0e8c3c7c8036799d40744ee47624)) by [@vdusek](https://github.com/vdusek)
+
+### ⚙️ Miscellaneous Tasks
+
+- [**breaking**] Drop support for Python 3.9 ([#34](https://github.com/apify/apify-haystack/pull/34)) ([d86960d](https://github.com/apify/apify-haystack/commit/d86960dbe3ad794541833680cfd05c3331170c26)) by [@vdusek](https://github.com/vdusek)
+- [**breaking**] Drop support for Python 3.10 ([#35](https://github.com/apify/apify-haystack/pull/35)) ([5b33fe5](https://github.com/apify/apify-haystack/commit/5b33fe53dd722d584461909edc2d7aacfdb686d9)) by [@vdusek](https://github.com/vdusek)
+- [**breaking**] Drop the unused python-dotenv dependency and move examples out of the package ([#43](https://github.com/apify/apify-haystack/pull/43)) ([9b3de5e](https://github.com/apify/apify-haystack/commit/9b3de5e81babcede7d3287fcacf1189f72d02224)) by [@vdusek](https://github.com/vdusek)
+
+
+<!-- git-cliff-unreleased-end -->
+# Changelog
+
 ## [0.1.7](https://github.com/apify/apify-haystack/releases/tag/0.1.7)  (2024-12-09)
 
 🐛 Bug Fixes
