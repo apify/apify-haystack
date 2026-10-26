@@ -513,6 +513,26 @@ async def test_close_async_releases_async_client(async_client_class: Mock, async
     assert async_client_class.call_count == 2
 
 
+async def test_close_is_safe_before_warm_up_and_when_repeated(client_class: Mock, async_client_class: Mock) -> None:
+    """`close` and `close_async` do nothing before warm-up, and closing twice closes each client only once."""
+    loader = ApifyDatasetLoader('dataset-id', to_document)
+
+    loader.close()
+    await loader.close_async()
+
+    client_class.assert_not_called()
+    async_client_class.assert_not_called()
+
+    loader.warm_up()
+    await loader.warm_up_async()
+    for _ in range(2):
+        loader.close()
+        await loader.close_async()
+
+    client_class.return_value.http_client.close.assert_called_once()
+    async_client_class.return_value.http_client.aclose.assert_awaited_once()
+
+
 async def test_actor_call_runs_in_async_pipeline(async_client: Mock, client_class: Mock) -> None:
     """`Pipeline.run_async` runs the component through its `run_async` with the async client."""
     pipeline = Pipeline()
