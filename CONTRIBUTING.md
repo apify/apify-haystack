@@ -32,6 +32,8 @@ We use [ruff](https://docs.astral.sh/ruff/) for linting and formatting, [ty](htt
 
 Unit tests (`tests/unit`) are isolated from the Apify API. Run them with `uv run poe unit-tests`, or a single test with `uv run pytest tests/unit/<path>.py::<test_name>`.
 
+Integration tests (`tests/integration`) run the components against the Apify platform, so they need an Apify API token in the `APIFY_TOKEN` environment variable and are skipped without one. Run them with `uv run poe integration-tests`. They run real Actors on that account, which costs a little. CI runs them on pull requests from this repository and on pushes to `main`, with the test user's token.
+
 ## Documentation
 
 We adhere to the [Google docstring format](https://sphinxcontrib-napoleon.readthedocs.io/en/latest/example_google.html) for documenting our codebase. Every user-facing class or method is documented. Documentation standards are enforced using [Ruff](https://docs.astral.sh/ruff/).
