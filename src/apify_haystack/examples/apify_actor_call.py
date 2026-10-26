@@ -21,17 +21,17 @@ from haystack import Document
 from apify_haystack import ApifyDatasetFromActorCall
 
 # Set API keys here
-os.environ["APIFY_API_TOKEN"] = ""
+os.environ['APIFY_API_TOKEN'] = ''
 
-actor_id = "apify/website-content-crawler"
+actor_id = 'apify/website-content-crawler'
 run_input = {
-    "maxCrawlPages": 3,  # limit the number of pages to crawl
-    "startUrls": [{"url": "https://haystack.deepset.ai/"}],
+    'maxCrawlPages': 3,  # limit the number of pages to crawl
+    'startUrls': [{'url': 'https://haystack.deepset.ai/'}],
 }
 
 
 def dataset_mapping_function(dataset_item: dict) -> Document:
-    return Document(content=dataset_item.get("text"), meta={"url": dataset_item.get("url")})
+    return Document(content=dataset_item.get('text'), meta={'url': dataset_item.get('url')})
 
 
 actor = ApifyDatasetFromActorCall(
@@ -39,11 +39,11 @@ actor = ApifyDatasetFromActorCall(
     run_input=run_input,
     dataset_mapping_function=dataset_mapping_function,
 )
-print(f"Calling the Apify actor {actor_id} ... crawling will take some time ...")
-print("You can monitor the progress at: https://console.apify.com/actors/runs")
+print(f'Calling the Apify actor {actor_id} ... crawling will take some time ...')
+print('You can monitor the progress at: https://console.apify.com/actors/runs')
 
-dataset = actor.run().get("documents")
+dataset = actor.run().get('documents')
 
-print(f"Loaded {len(dataset)} documents from the Apify Actor {actor_id}:")
+print(f'Loaded {len(dataset)} documents from the Apify Actor {actor_id}:')
 for d in dataset:
     print(d)

@@ -22,20 +22,20 @@ from haystack.components.preprocessors import DocumentCleaner
 
 from apify_haystack import ApifyDatasetFromActorCall
 
-os.environ["APIFY_API_TOKEN"] = "YOUR-APIFY-API-TOKEN"
-os.environ["OPENAI_API_KEY"] = "YOUR-OPENAI-API-KEY"
+os.environ['APIFY_API_TOKEN'] = 'YOUR-APIFY-API-TOKEN'
+os.environ['OPENAI_API_KEY'] = 'YOUR-OPENAI-API-KEY'
 
 
 def dataset_mapping_function(dataset_item: dict) -> Document:
     return Document(
-        content=dataset_item.get("text"),
-        meta={"ownerUsername": dataset_item.get("ownerUsername")},
+        content=dataset_item.get('text'),
+        meta={'ownerUsername': dataset_item.get('ownerUsername')},
     )
 
 
 document_loader = ApifyDatasetFromActorCall(
-    actor_id="apify/instagram-comment-scraper",
-    run_input={"resultsLimit": 50},
+    actor_id='apify/instagram-comment-scraper',
+    run_input={'resultsLimit': 50},
     dataset_mapping_function=dataset_mapping_function,
 )
 
@@ -58,28 +58,28 @@ cleaner = DocumentCleaner(
     remove_repeated_substrings=True,
 )
 prompt_builder = PromptBuilder(template=prompt)
-generator = OpenAIGenerator(model="gpt-3.5-turbo")
+generator = OpenAIGenerator(model='gpt-3.5-turbo')
 
 
 pipe = Pipeline()
-pipe.add_component("loader", document_loader)
-pipe.add_component("cleaner", cleaner)
-pipe.add_component("prompt_builder", prompt_builder)
-pipe.add_component("llm", generator)
-pipe.connect("loader", "cleaner")
-pipe.connect("cleaner", "prompt_builder")
-pipe.connect("prompt_builder", "llm")
+pipe.add_component('loader', document_loader)
+pipe.add_component('cleaner', cleaner)
+pipe.add_component('prompt_builder', prompt_builder)
+pipe.add_component('llm', generator)
+pipe.connect('loader', 'cleaner')
+pipe.connect('cleaner', 'prompt_builder')
+pipe.connect('prompt_builder', 'llm')
 
-print("Vibe analysis:\n")
+print('Vibe analysis:\n')
 
-url1 = "https://www.instagram.com/p/C_a9jcRuJZZ/"  # @tiffintech on How to easily keep up with tech?
-print(f"\nScraping Instagram comments for: {url1} and running analysis (it might take around 30-60 secs) ...\n")
+url1 = 'https://www.instagram.com/p/C_a9jcRuJZZ/'  # @tiffintech on How to easily keep up with tech?
+print(f'\nScraping Instagram comments for: {url1} and running analysis (it might take around 30-60 secs) ...\n')
 
-res = pipe.run({"loader": {"run_input": {"directUrls": [url1]}}})
-print("Analysis:", res.get("llm", {}).get("replies", ["No response"])[0])
+res = pipe.run({'loader': {'run_input': {'directUrls': [url1]}}})
+print('Analysis:', res.get('llm', {}).get('replies', ['No response'])[0])
 
-url2 = "https://www.instagram.com/p/C_RgBzogufK/"  # @maharishis on Affordable Care Act
-print(f"\nScraping Instagram comments for: {url2} and running analysis (it might take around 30-60 secs)... \n")
+url2 = 'https://www.instagram.com/p/C_RgBzogufK/'  # @maharishis on Affordable Care Act
+print(f'\nScraping Instagram comments for: {url2} and running analysis (it might take around 30-60 secs)... \n')
 
-res = pipe.run({"loader": {"run_input": {"directUrls": [url2]}}})
-print("Analysis:", res.get("llm", {}).get("replies", ["No response"])[0])
+res = pipe.run({'loader': {'run_input': {'directUrls': [url2]}}})
+print('Analysis:', res.get('llm', {}).get('replies', ['No response'])[0])

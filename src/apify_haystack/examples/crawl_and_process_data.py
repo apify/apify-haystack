@@ -28,57 +28,57 @@ from haystack.document_stores.in_memory import InMemoryDocumentStore
 
 from apify_haystack import ApifyDatasetFromActorCall
 
-os.environ["APIFY_API_TOKEN"] = "YOUR-APIFY-API-TOKEN"
-os.environ["OPENAI_API_KEY"] = "YOUR-OPENAI-API-KEY"
+os.environ['APIFY_API_TOKEN'] = 'YOUR-APIFY-API-TOKEN'
+os.environ['OPENAI_API_KEY'] = 'YOUR-OPENAI-API-KEY'
 
 document_loader = ApifyDatasetFromActorCall(
-    actor_id="apify/website-content-crawler",
+    actor_id='apify/website-content-crawler',
     run_input={
-        "maxCrawlPages": 3,  # limit the number of pages to crawl
-        "startUrls": [{"url": "https://haystack.deepset.ai/"}],
+        'maxCrawlPages': 3,  # limit the number of pages to crawl
+        'startUrls': [{'url': 'https://haystack.deepset.ai/'}],
     },
-    dataset_mapping_function=lambda item: Document(content=item["text"] or "", meta={"url": item["url"]}),
+    dataset_mapping_function=lambda item: Document(content=item['text'] or '', meta={'url': item['url']}),
 )
 
 document_store = InMemoryDocumentStore()
-print(f"Initialized InMemoryDocumentStore with {document_store.count_documents()} documents")
+print(f'Initialized InMemoryDocumentStore with {document_store.count_documents()} documents')
 
-document_splitter = DocumentSplitter(split_by="word", split_length=150, split_overlap=50)
+document_splitter = DocumentSplitter(split_by='word', split_length=150, split_overlap=50)
 document_embedder = OpenAIDocumentEmbedder()
 document_writer = DocumentWriter(document_store)
 
 pipe = Pipeline()
-pipe.add_component("document_loader", document_loader)
-pipe.add_component("document_splitter", document_splitter)
-pipe.add_component("document_embedder", document_embedder)
-pipe.add_component("document_writer", document_writer)
+pipe.add_component('document_loader', document_loader)
+pipe.add_component('document_splitter', document_splitter)
+pipe.add_component('document_embedder', document_embedder)
+pipe.add_component('document_writer', document_writer)
 
-pipe.connect("document_loader", "document_splitter")
-pipe.connect("document_splitter", "document_embedder")
-pipe.connect("document_embedder", "document_writer")
+pipe.connect('document_loader', 'document_splitter')
+pipe.connect('document_splitter', 'document_embedder')
+pipe.connect('document_embedder', 'document_writer')
 
-print("\nCrawling will take some time ...")
-print("You can visit https://console.apify.com/actors/runs to monitor the progress\n")
+print('\nCrawling will take some time ...')
+print('You can visit https://console.apify.com/actors/runs to monitor the progress\n')
 
 pipe.run({})
-print(f"Added {document_store.count_documents()} to vector from Website Content Crawler")
+print(f'Added {document_store.count_documents()} to vector from Website Content Crawler')
 
-print("\n ### Retrieving documents from the document store using BM25 ###\n")
+print('\n ### Retrieving documents from the document store using BM25 ###\n')
 print("query='Haystack'\n")
 
 bm25_retriever = InMemoryBM25Retriever(document_store)
 
-for doc in bm25_retriever.run("Haystack", top_k=1)["documents"]:
+for doc in bm25_retriever.run('Haystack', top_k=1)['documents']:
     print(doc.content)
 
-print("\n ### Retrieving documents from the document store using vector similarity ###\n")
+print('\n ### Retrieving documents from the document store using vector similarity ###\n')
 retrieval_pipe = Pipeline()
-retrieval_pipe.add_component("embedder", OpenAITextEmbedder())
-retrieval_pipe.add_component("retriever", InMemoryEmbeddingRetriever(document_store, top_k=1))
+retrieval_pipe.add_component('embedder', OpenAITextEmbedder())
+retrieval_pipe.add_component('retriever', InMemoryEmbeddingRetriever(document_store, top_k=1))
 
-retrieval_pipe.connect("embedder.embedding", "retriever.query_embedding")
+retrieval_pipe.connect('embedder.embedding', 'retriever.query_embedding')
 
-results = retrieval_pipe.run({"embedder": {"text": "What is Haystack?"}})
+results = retrieval_pipe.run({'embedder': {'text': 'What is Haystack?'}})
 
-for doc in results["retriever"]["documents"]:
+for doc in results['retriever']['documents']:
     print(doc.content)
