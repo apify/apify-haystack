@@ -94,7 +94,7 @@ class ApifyDatasetFromActorCall:
                 instance of the Document class.
             run_input (dict, optional): The input parameters for the Actor you want to run. This can be provided
                 either in the `run` method or during the class instantiation. If specified in both places,
-                the inputs will be merged.
+                the inputs are merged and the values from `run` take precedence.
             build (str, optional): Optionally specifies the actor build to run.
                 It can be either a build tag or build number.
             memory_mbytes (int, optional): Optional memory limit for the run, in megabytes.
@@ -127,7 +127,7 @@ class ApifyDatasetFromActorCall:
         Args:
             run_input (dict, optional): The input parameters for the Actor you want to run. This can be provided
                 either in the `run` method or during the class instantiation. If specified in both places,
-                the inputs will be merged.
+                the inputs are merged and the values from `run` take precedence.
 
         Example:
             .. code-block:: python
@@ -141,7 +141,7 @@ class ApifyDatasetFromActorCall:
         Type-hint note: the output is not type-hinted, otherwise linting complains
         that `run` method is not haystack a component
         """
-        if not (run_input := _merge_inputs(run_input, self.run_input)):
+        if not (run_input := _merge_inputs(self.run_input, run_input)):
             raise ValueError('Please provide the run_input either in the constructor or in the run method.')
 
         if not (
@@ -191,7 +191,7 @@ class ApifyDatasetFromTaskCall:
                 instance of the Document class.
             task_input (dict, optional): The input parameters for the Actor you want to run. This can be provided
                 either in the `run` method or during the class instantiation. If specified in both places,
-                the inputs will be merged.
+                the inputs are merged and the values from `run` take precedence.
             build (str, optional): Optionally specifies the Actor build to run.
                 It can be either a build tag or build number.
             memory_mbytes (int, optional): Optional memory limit for the run, in megabytes.
@@ -224,18 +224,17 @@ class ApifyDatasetFromTaskCall:
         Args:
             task_input (dict, optional): The input parameters for the Actor you want to run. This can be provided
                 either in the `run` method or during the class instantiation. If specified in both places,
-                the inputs will be merged.
+                the inputs are merged and the values from `run` take precedence.
 
         Type-hint note: the output is not type-hinted, otherwise linting complains
         that `run` method is not haystack a component
         """
-        task_input = task_input or self.task_input
-        if not task_input:
+        if not (task_input := _merge_inputs(self.task_input, task_input)):
             raise ValueError('Please provide the task_input either in the constructor or in the run method.')
 
         if not (
             actor_call := self.client.task(self.task_id).call(
-                task_input=self.task_input,
+                task_input=task_input,
                 build=self.build,
                 memory_mbytes=self.memory_mbytes,
                 timeout_secs=self.timeout_secs,

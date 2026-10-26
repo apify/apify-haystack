@@ -98,6 +98,15 @@ def test_actor_call_runs_actor_and_loads_its_dataset(client: Mock) -> None:
     assert result == {'documents': [to_document(item) for item in ITEMS]}
 
 
+def test_actor_call_run_input_overrides_constructor_input(client: Mock) -> None:
+    """Keys passed to `run` override the same keys from the constructor input."""
+    actor = ApifyDatasetFromActorCall('actor-id', to_document, run_input={'a': 1, 'b': 1}, apify_api_token='token')
+
+    actor.run(run_input={'b': 2})
+
+    assert client.actor.return_value.call.call_args.kwargs['run_input'] == {'a': 1, 'b': 2}
+
+
 def test_actor_call_without_input_raises(client: Mock) -> None:
     """Running an Actor without input in either the constructor or `run` raises a `ValueError`."""
     actor = ApifyDatasetFromActorCall('actor-id', to_document, apify_api_token='token')
@@ -147,6 +156,24 @@ def test_task_call_runs_task_and_loads_its_dataset(client: Mock) -> None:
     )
     client.dataset.assert_called_once_with('dataset-id')
     assert result == {'documents': [to_document(item) for item in ITEMS]}
+
+
+@pytest.mark.parametrize(
+    ('constructor_input', 'run_input', 'expected_input'),
+    [
+        pytest.param(None, {'a': 1}, {'a': 1}, id='run input only'),
+        pytest.param({'a': 1, 'b': 1}, {'b': 2}, {'a': 1, 'b': 2}, id='run input overrides constructor input'),
+    ],
+)
+def test_task_call_uses_run_input(
+    client: Mock, constructor_input: dict | None, run_input: dict, expected_input: dict
+) -> None:
+    """Input passed to `run` is merged into the constructor input and sent to the task."""
+    task = ApifyDatasetFromTaskCall('task-id', to_document, task_input=constructor_input, apify_api_token='token')
+
+    task.run(task_input=run_input)
+
+    assert client.task.return_value.call.call_args.kwargs['task_input'] == expected_input
 
 
 def test_task_call_without_input_raises(client: Mock) -> None:
