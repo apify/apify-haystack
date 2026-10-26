@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import re
 from typing import Any
 
@@ -15,6 +16,10 @@ _MAX_NAME_LENGTH = 64
 _MAX_DESCRIPTION_LENGTH = 1000
 _MAX_PROPERTY_DESCRIPTION_LENGTH = 350
 
+# The markers around tool output that the LLM must treat as untrusted data, never as instructions.
+UNTRUSTED_CONTENT_START = '<<<EXTERNAL_UNTRUSTED_CONTENT>>>'
+UNTRUSTED_CONTENT_END = '<<<END_EXTERNAL_UNTRUSTED_CONTENT>>>'
+
 # The keys of an Actor input schema property that a JSON schema for an LLM understands.
 _PROPERTY_SCHEMA_KEYS = ('type', 'description', 'enum', 'default', 'items', 'minimum', 'maximum')
 
@@ -25,6 +30,9 @@ class ApifyActorTool(_ApifyClientComponent, Tool):
     Use it to give a Haystack `Agent` access to any Actor from Apify Store. The tool takes its parameters from the
     Actor's input schema and its description from the Actor's definition, so the LLM sees the same inputs as a user
     of the Actor. Reading them needs one Apify API request when the tool is created without `parameters`.
+
+    The LLM gets the dataset items as JSON between the `UNTRUSTED_CONTENT_START` and `UNTRUSTED_CONTENT_END` markers,
+    since scraped content can carry prompt injections. `invoke` and `invoke_async` return the items unwrapped.
     For details, see https://docs.apify.com/platform/integrations/haystack
 
     Example:
@@ -91,6 +99,7 @@ class ApifyActorTool(_ApifyClientComponent, Tool):
             parameters=parameters,
             function=self._run_actor,
             async_function=self._run_actor_async,
+            outputs_to_string={'handler': self._wrap_untrusted_content},
         )
 
     def to_dict(self) -> dict[str, Any]:
@@ -116,6 +125,14 @@ class ApifyActorTool(_ApifyClientComponent, Tool):
         init_parameters = dict(data['data'])
         deserialize_secrets_inplace(init_parameters, keys=['apify_token'])
         return cls(**init_parameters)
+
+    def _wrap_untrusted_content(self, dataset_items: list[dict]) -> str:
+        """Serialize the dataset items for the LLM, wrapped in the untrusted content markers."""
+        content = json.dumps(dataset_items, ensure_ascii=False, default=str)
+        # Scraped text could contain the markers and close the wrapper early.
+        for marker in (UNTRUSTED_CONTENT_START, UNTRUSTED_CONTENT_END):
+            content = content.replace(marker, '[marker removed]')
+        return f'{UNTRUSTED_CONTENT_START}\nSource: apify:{self.actor_id}\n{content}\n{UNTRUSTED_CONTENT_END}'
 
     def _run_actor(self, **run_input: Any) -> list[dict]:
         client = self._get_client()
