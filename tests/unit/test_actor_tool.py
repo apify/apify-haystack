@@ -46,7 +46,6 @@ ITEMS = [{'url': 'https://example.com'}]
 @pytest.fixture
 def client_class(monkeypatch: pytest.MonkeyPatch) -> Mock:
     client = Mock()
-    client.http_client._headers = {'User-Agent': 'ApifyClient/test'}
     client.actor.return_value.default_build.return_value.get.return_value.model_dump.return_value = {
         'actorDefinition': ACTOR_DEFINITION
     }
@@ -177,7 +176,6 @@ def test_failed_run_raises(client: Mock) -> None:
 async def test_invoke_async_uses_async_client(monkeypatch: pytest.MonkeyPatch, client_class: Mock) -> None:
     """`invoke_async` runs the Actor with the async client and creates no sync client."""
     async_client = Mock()
-    async_client.http_client._headers = {'User-Agent': 'ApifyClient/test'}
     async_client.actor.return_value.call = AsyncMock(
         return_value=Mock(spec=Run, id='run-id', status='SUCCEEDED', default_dataset_id='d')
     )
