@@ -58,12 +58,11 @@ class ApifyClientComponent:
 
 def create_client(client_class: type[_ClientT], token: str | None) -> _ClientT:
     """Create an Apify client that identifies its requests as coming from this integration."""
-    client = client_class(token, headers={'x-apify-integration-platform': HAYSTACK_INTEGRATION_PLATFORM})
-
-    # Older platform paths attribute requests by the user-agent marker. Passing it through `headers` would replace
-    # apify-client's own user agent, so the header is extended in place.
-    client.http_client._headers['User-Agent'] += f'; {HAYSTACK_ATTRIBUTE_USER_AGENT}'  # noqa: SLF001
-    return client
+    return client_class(
+        token,
+        headers={'x-apify-integration-platform': HAYSTACK_INTEGRATION_PLATFORM},
+        user_agent_suffix=HAYSTACK_ATTRIBUTE_USER_AGENT,
+    )
 
 
 def get_dataset_id(run: Run | None, label: str) -> str:
