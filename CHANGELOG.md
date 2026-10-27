@@ -2,8 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-<!-- git-cliff-unreleased-start -->
-## 0.1.8 - **not yet released**
+## [1.0.0](https://github.com/apify/apify-haystack/releases/tag/v1.0.0) (2026-10-27)
 
 ### 🚀 Features
 
@@ -38,7 +37,6 @@ All notable changes to this project will be documented in this file.
 - [**breaking**] Drop the unused python-dotenv dependency and move examples out of the package ([#43](https://github.com/apify/apify-haystack/pull/43)) ([9b3de5e](https://github.com/apify/apify-haystack/commit/9b3de5e81babcede7d3287fcacf1189f72d02224)) by [@vdusek](https://github.com/vdusek)
 
 
-<!-- git-cliff-unreleased-end -->
 # Changelog
 
 ## [0.1.7](https://github.com/apify/apify-haystack/releases/tag/0.1.7)  (2024-12-09)
