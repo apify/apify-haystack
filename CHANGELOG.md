@@ -19,6 +19,7 @@ All notable changes to this project will be documented in this file.
 - Add a default dataset mapping function ([#64](https://github.com/apify/apify-haystack/pull/64)) ([c25c9a3](https://github.com/apify/apify-haystack/commit/c25c9a3160ca7425737abd52986d756d009df9d8)) by [@vdusek](https://github.com/vdusek)
 - Mark ApifyActorTool output as untrusted external content ([#65](https://github.com/apify/apify-haystack/pull/65)) ([ee93080](https://github.com/apify/apify-haystack/commit/ee930801ccf7ac88ed77be9c27b9dea57a02c038)) by [@vdusek](https://github.com/vdusek)
 - Add a max_total_charge_usd limit to the Actor runs ([#70](https://github.com/apify/apify-haystack/pull/70)) ([83a8184](https://github.com/apify/apify-haystack/commit/83a81847cc4050cabd44183979440ab944350d95)) by [@vdusek](https://github.com/vdusek)
+- Add support for Python 3.15 ([#37](https://github.com/apify/apify-haystack/pull/37)) ([9a1856e](https://github.com/apify/apify-haystack/commit/9a1856e3a57dd36fc1e528392dc64f089a1d4e33)) by [@vdusek](https://github.com/vdusek)
 
 ### 🐛 Bug Fixes
 
