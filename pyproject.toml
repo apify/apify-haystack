@@ -25,7 +25,7 @@ classifiers = [
 ]
 keywords = ["apify", "crawler", "haystack", "rag", "scraper", "scraping"]
 dependencies = [
-    "apify-client>=3.4.0,<4.0.0",
+    "apify-client>=3.3.0,<4.0.0",
     "haystack-ai>=3.0.0,<4.0.0",
 ]
 
