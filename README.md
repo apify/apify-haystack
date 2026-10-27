@@ -21,6 +21,8 @@ The integration is available as the [`apify-haystack`](https://pypi.org/project/
 pip install apify-haystack
 ```
 
+Upgrading from 0.1.x? See [UPGRADING.md](https://github.com/apify/apify-haystack/blob/main/UPGRADING.md).
+
 ## Components
 
 - `ApifyDatasetFromActorCall` runs an Actor, waits for it to finish, and loads its default dataset.

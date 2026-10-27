@@ -9,7 +9,7 @@ to call the Apify Actor and retrieve the data in a structured format.
 
 The script should produce the following output (an example of a single Document):
 ......
-Document(id=a617d376*****, content: 'Introduction to Haystack 2.x)
+Document(id=a617d376*****, content: 'Introduction to Haystack
 Haystack is an open-source framework fo...', meta: {'url': 'https://docs.haystack.deepset.ai/docs/intro'}
 .....
 """
