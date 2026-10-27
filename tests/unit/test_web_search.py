@@ -33,7 +33,6 @@ DOCUMENTS = [
 @pytest.fixture
 def client(monkeypatch: pytest.MonkeyPatch) -> Mock:
     client = Mock()
-    client.http_client._headers = {'User-Agent': 'ApifyClient/test'}
     client.actor.return_value.call.return_value = Mock(
         spec=Run, id='run-id', status='SUCCEEDED', default_dataset_id='dataset-id'
     )
@@ -45,7 +44,6 @@ def client(monkeypatch: pytest.MonkeyPatch) -> Mock:
 @pytest.fixture
 def async_client(monkeypatch: pytest.MonkeyPatch) -> Mock:
     client = Mock()
-    client.http_client._headers = {'User-Agent': 'ApifyClient/test'}
     client.actor.return_value.call = AsyncMock(
         return_value=Mock(spec=Run, id='run-id', status='SUCCEEDED', default_dataset_id='dataset-id')
     )

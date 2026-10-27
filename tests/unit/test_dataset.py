@@ -36,7 +36,6 @@ def to_document(item: dict) -> Document:
 @pytest.fixture
 def client_class(monkeypatch: pytest.MonkeyPatch) -> Mock:
     client = Mock()
-    client.http_client._headers = {'User-Agent': 'ApifyClient/test'}
     client.dataset.return_value.list_items.return_value.items = ITEMS
     client.actor.return_value.call.return_value = Mock(
         spec=Run, id='run-id', status='SUCCEEDED', default_dataset_id='dataset-id'
@@ -57,7 +56,6 @@ def client(client_class: Mock) -> Mock:
 @pytest.fixture
 def async_client_class(monkeypatch: pytest.MonkeyPatch) -> Mock:
     client = Mock()
-    client.http_client._headers = {'User-Agent': 'ApifyClient/test'}
     client.http_client.aclose = AsyncMock()
     client.dataset.return_value.list_items = AsyncMock(return_value=Mock(items=ITEMS))
     client.actor.return_value.call = AsyncMock(
@@ -123,7 +121,11 @@ def test_token_is_read_from_environment(
 
     ApifyDatasetFromActorCall('actor-id', to_document).warm_up()
 
-    client_class.assert_called_once_with(expected_token, headers={'x-apify-integration-platform': 'haystack'})
+    client_class.assert_called_once_with(
+        expected_token,
+        headers={'x-apify-integration-platform': 'haystack'},
+        user_agent_suffix='Origin/haystack',
+    )
 
 
 def test_actor_call_runs_actor_and_loads_its_dataset(client: Mock) -> None:
@@ -372,7 +374,11 @@ def test_loader_without_token_uses_anonymous_client(monkeypatch: pytest.MonkeyPa
 
     ApifyDatasetLoader('dataset-id', to_document).warm_up()
 
-    client_class.assert_called_once_with(None, headers={'x-apify-integration-platform': 'haystack'})
+    client_class.assert_called_once_with(
+        None,
+        headers={'x-apify-integration-platform': 'haystack'},
+        user_agent_suffix='Origin/haystack',
+    )
 
 
 def test_actor_call_to_dict() -> None:
