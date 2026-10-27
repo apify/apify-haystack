@@ -1,10 +1,17 @@
-# Apify-Haystack integration
+<h1 align="center">Apify-Haystack integration</h1>
 
-[![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://github.com/apify/apify-haystack/blob/main/LICENSE)
-[![PyPi Package](https://badge.fury.io/py/apify-haystack.svg)](https://badge.fury.io/py/apify-haystack)
-[![Python](https://img.shields.io/pypi/pyversions/apify-haystack)](https://pypi.org/project/apify-haystack)
+<p align="center">
+  <strong>The official integration of the <a href="https://apify.com/">Apify</a> platform with <a href="https://haystack.deepset.ai/">Haystack</a>.</strong>
+</p>
 
-The Apify-Haystack integration allows easy interaction between the [Apify](https://apify.com/) platform and [Haystack](https://haystack.deepset.ai/).
+<p align="center">
+  <a href="https://pypi.org/project/apify-haystack/"><img src="https://badge.fury.io/py/apify-haystack.svg" alt="PyPI version"></a>
+  <a href="https://pypi.org/project/apify-haystack/"><img src="https://img.shields.io/pypi/dm/apify-haystack" alt="PyPI downloads"></a>
+  <a href="https://pypi.org/project/apify-haystack/"><img src="https://img.shields.io/badge/python-3.11%2B-blue" alt="Python versions"></a>
+  <a href="https://github.com/apify/apify-haystack/actions/workflows/on_main.yaml"><img src="https://github.com/apify/apify-haystack/actions/workflows/on_main.yaml/badge.svg?branch=main" alt="Build status"></a>
+  <a href="https://github.com/apify/apify-haystack/blob/main/LICENSE"><img src="https://img.shields.io/pypi/l/apify-haystack" alt="License"></a>
+  <a href="https://discord.gg/jyEM2PRvMU"><img src="https://img.shields.io/discord/801163717915574323?label=discord" alt="Chat on Discord"></a>
+</p>
 
 Apify is a platform for web scraping, data extraction, and web automation tasks.
 It provides serverless applications called Actors for tasks like crawling websites and scraping Facebook, Instagram, and Google results.
