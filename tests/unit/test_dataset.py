@@ -164,14 +164,33 @@ def test_actor_call_run_input_overrides_constructor_input(client: Mock) -> None:
     assert client.actor.return_value.call.call_args.kwargs['run_input'] == {'a': 1, 'b': 2}
 
 
-def test_actor_call_without_input_raises(client: Mock) -> None:
-    """Running an Actor without input in either the constructor or `run` raises a `ValueError`."""
-    actor = ApifyDatasetFromActorCall('actor-id', to_document, apify_token=TOKEN)
+EMPTY_INPUTS = [
+    pytest.param(None, id='no input'),
+    pytest.param({}, id='empty input'),
+]
 
-    with pytest.raises(ValueError, match='Please provide the run_input'):
-        actor.run()
+INPUT_COMPONENTS = [
+    pytest.param(ApifyDatasetFromActorCall, 'actor', 'run_input', id='actor call'),
+    pytest.param(ApifyDatasetFromTaskCall, 'task', 'task_input', id='task call'),
+]
 
-    client.actor.assert_not_called()
+
+@pytest.mark.parametrize('empty_input', EMPTY_INPUTS)
+@pytest.mark.parametrize(('component_class', 'resource', 'input_name'), INPUT_COMPONENTS)
+def test_run_without_input_sends_no_input(
+    client: Mock,
+    component_class: type,
+    resource: str,
+    input_name: str,
+    empty_input: dict | None,
+) -> None:
+    """Without input, the run starts with no input, so the Actor uses its defaults and the task its saved input."""
+    component = component_class('id', to_document, empty_input, apify_token=TOKEN)
+
+    result = component.run(empty_input)
+
+    assert getattr(client, resource).return_value.call.call_args.kwargs[input_name] is None
+    assert result == {'documents': [to_document(item) for item in ITEMS]}
 
 
 def test_actor_call_without_run_raises(client: Mock) -> None:
@@ -287,16 +306,6 @@ def test_task_call_without_run_raises(client: Mock) -> None:
 
     with pytest.raises(ValueError, match='No response found'):
         task.run()
-
-
-def test_task_call_without_input_raises(client: Mock) -> None:
-    """Running a task without input in either the constructor or `run` raises a `ValueError`."""
-    task = ApifyDatasetFromTaskCall('task-id', to_document, apify_token=TOKEN)
-
-    with pytest.raises(ValueError, match='Please provide the task_input'):
-        task.run()
-
-    client.task.assert_not_called()
 
 
 @pytest.mark.parametrize(
@@ -481,20 +490,22 @@ async def test_task_call_run_async_runs_task_and_loads_its_dataset(async_client:
     assert result == {'documents': [to_document(item) for item in ITEMS]}
 
 
-@pytest.mark.parametrize(
-    ('component', 'match'),
-    [
-        pytest.param(ApifyDatasetFromActorCall('id', to_document, apify_token=TOKEN), 'run_input', id='actor call'),
-        pytest.param(ApifyDatasetFromTaskCall('id', to_document, apify_token=TOKEN), 'task_input', id='task call'),
-    ],
-)
-async def test_run_async_without_input_raises(async_client: Mock, component: Any, match: str) -> None:
-    """`run_async` without input in either the constructor or the call raises a `ValueError`."""
-    with pytest.raises(ValueError, match=match):
-        await component.run_async()
+@pytest.mark.parametrize('empty_input', EMPTY_INPUTS)
+@pytest.mark.parametrize(('component_class', 'resource', 'input_name'), INPUT_COMPONENTS)
+async def test_run_async_without_input_sends_no_input(
+    async_client: Mock,
+    component_class: type,
+    resource: str,
+    input_name: str,
+    empty_input: dict | None,
+) -> None:
+    """Without input, `run_async` starts the run with no input."""
+    component = component_class('id', to_document, empty_input, apify_token=TOKEN)
 
-    async_client.actor.assert_not_called()
-    async_client.task.assert_not_called()
+    result = await component.run_async(empty_input)
+
+    assert getattr(async_client, resource).return_value.call.call_args.kwargs[input_name] is None
+    assert result == {'documents': [to_document(item) for item in ITEMS]}
 
 
 async def test_run_async_without_run_raises(async_client: Mock) -> None:

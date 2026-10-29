@@ -132,7 +132,8 @@ class ApifyDatasetFromActorCall(ApifyDatasetComponent):
                 `default_dataset_mapping_function`.
             run_input (dict, optional): The input parameters for the Actor you want to run. This can be provided
                 either in the `run` method or during the class instantiation. If specified in both places,
-                the inputs are merged and the values from `run` take precedence.
+                the inputs are merged and the values from `run` take precedence. Without any input, the
+                Actor runs with its default input.
             build (str, optional): Optionally specifies the Actor build to run.
                 It can be either a build tag or build number.
             memory_mbytes (int, optional): Optional memory limit for the run, in megabytes.
@@ -160,7 +161,8 @@ class ApifyDatasetFromActorCall(ApifyDatasetComponent):
         Args:
             run_input (dict, optional): The input parameters for the Actor you want to run. This can be provided
                 either in the `run` method or during the class instantiation. If specified in both places,
-                the inputs are merged and the values from `run` take precedence.
+                the inputs are merged and the values from `run` take precedence. Without any input, the
+                Actor runs with its default input.
 
         Example:
             .. code-block:: python
@@ -172,8 +174,7 @@ class ApifyDatasetFromActorCall(ApifyDatasetComponent):
                 )
                 dataset = actor.run(run_input={"startUrls": [{"url": "https://haystack.deepset.ai/"}]})
         """
-        if not (run_input := _merge_inputs(self.run_input, run_input)):
-            raise ValueError('Please provide the run_input either in the constructor or in the run method.')
+        run_input = _merge_inputs(self.run_input, run_input)
 
         client = self._get_client()
         run = client.actor(self.actor_id).call(
@@ -193,10 +194,10 @@ class ApifyDatasetFromActorCall(ApifyDatasetComponent):
         Args:
             run_input (dict, optional): The input parameters for the Actor you want to run. This can be provided
                 either in the `run_async` method or during the class instantiation. If specified in both places,
-                the inputs are merged and the values from `run_async` take precedence.
+                the inputs are merged and the values from `run_async` take precedence. Without any input, the
+                Actor runs with its default input.
         """
-        if not (run_input := _merge_inputs(self.run_input, run_input)):
-            raise ValueError('Please provide the run_input either in the constructor or in the run method.')
+        run_input = _merge_inputs(self.run_input, run_input)
 
         client = self._get_async_client()
         run = await client.actor(self.actor_id).call(
@@ -260,7 +261,8 @@ class ApifyDatasetFromTaskCall(ApifyDatasetComponent):
                 `default_dataset_mapping_function`.
             task_input (dict, optional): The input parameters for the task you want to run. This can be provided
                 either in the `run` method or during the class instantiation. If specified in both places,
-                the inputs are merged and the values from `run` take precedence.
+                the inputs are merged and the values from `run` take precedence. Without any input, the
+                task runs with its saved input.
             build (str, optional): Optionally specifies the Actor build to run.
                 It can be either a build tag or build number.
             memory_mbytes (int, optional): Optional memory limit for the run, in megabytes.
@@ -288,10 +290,10 @@ class ApifyDatasetFromTaskCall(ApifyDatasetComponent):
         Args:
             task_input (dict, optional): The input parameters for the task you want to run. This can be provided
                 either in the `run` method or during the class instantiation. If specified in both places,
-                the inputs are merged and the values from `run` take precedence.
+                the inputs are merged and the values from `run` take precedence. Without any input, the
+                task runs with its saved input.
         """
-        if not (task_input := _merge_inputs(self.task_input, task_input)):
-            raise ValueError('Please provide the task_input either in the constructor or in the run method.')
+        task_input = _merge_inputs(self.task_input, task_input)
 
         client = self._get_client()
         run = client.task(self.task_id).call(
@@ -311,10 +313,10 @@ class ApifyDatasetFromTaskCall(ApifyDatasetComponent):
         Args:
             task_input (dict, optional): The input parameters for the task you want to run. This can be provided
                 either in the `run_async` method or during the class instantiation. If specified in both places,
-                the inputs are merged and the values from `run_async` take precedence.
+                the inputs are merged and the values from `run_async` take precedence. Without any input, the
+                task runs with its saved input.
         """
-        if not (task_input := _merge_inputs(self.task_input, task_input)):
-            raise ValueError('Please provide the task_input either in the constructor or in the run method.')
+        task_input = _merge_inputs(self.task_input, task_input)
 
         client = self._get_async_client()
         run = await client.task(self.task_id).call(
@@ -375,9 +377,7 @@ def _serialize_mapping_function(dataset_mapping_function: Callable[[dict], Docum
 
 
 def _merge_inputs(input1: dict | None, input2: dict | None) -> dict | None:
-    if input1 and input2:
-        return input1 | input2
-    return input1 or input2
+    return (input1 or {}) | (input2 or {}) or None
 
 
 def _load_documents(
