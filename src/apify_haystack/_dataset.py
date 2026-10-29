@@ -377,7 +377,8 @@ def _serialize_mapping_function(dataset_mapping_function: Callable[[dict], Docum
 
 
 def _merge_inputs(input1: dict | None, input2: dict | None) -> dict | None:
-    return (input1 or {}) | (input2 or {}) or None
+    merged = (input1 or {}) | (input2 or {})
+    return merged or None
 
 
 def _load_documents(
