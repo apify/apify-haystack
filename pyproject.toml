@@ -4,7 +4,7 @@ build-backend = "uv_build"
 
 [project]
 name = "apify_haystack"
-version = "1.0.0"
+version = "1.0.1"
 description = "Apify integration for Haystack: load Actor results as Documents, search the web, and give Agents access to Apify Actors."
 authors = [{ name = "Apify Technologies s.r.o.", email = "support@apify.com" }]
 license = "Apache-2.0"
