@@ -2,15 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
-<!-- git-cliff-unreleased-start -->
-## 1.0.1 - **not yet released**
+## [1.0.1](https://github.com/apify/apify-haystack/releases/tag/v1.0.1) (2026-10-29)
 
 ### 🐛 Bug Fixes
 
 - Allow running Actors and tasks without input ([#84](https://github.com/apify/apify-haystack/pull/84)) ([3036312](https://github.com/apify/apify-haystack/commit/3036312e567dc513529e1d822db009b44ca97041)) by [@vdusek](https://github.com/vdusek)
 
 
-<!-- git-cliff-unreleased-end -->
 ## [1.0.0](https://github.com/apify/apify-haystack/releases/tag/v1.0.0) (2026-10-27)
 
 ### 🚀 Features
