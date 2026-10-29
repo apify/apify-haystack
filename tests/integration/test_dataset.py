@@ -161,8 +161,8 @@ def test_task_call_loads_run_dataset(task_id: str) -> None:
 
 
 async def test_task_call_run_async_loads_run_dataset(task_id: str) -> None:
-    """`run_async` runs the task through the async client and loads the same documents."""
-    task = ApifyDatasetFromTaskCall(task_id, task_input={'maxPagesPerCrawl': 1})
+    """`run_async` without input runs the task with its saved input and loads the same documents."""
+    task = ApifyDatasetFromTaskCall(task_id)
 
     result = await task.run_async()
     await task.close_async()
