@@ -41,7 +41,7 @@ jobs:
       url: https://pypi.org/project/apify-haystack
     steps:
       - name: Prepare distribution
-        uses: apify/actions/prepare-pypi-distribution@v1.6.2
+        uses: apify/actions/prepare-pypi-distribution@v1.9.0
         with:
           package_name: apify-haystack
           is_prerelease: ${{ inputs.is_prerelease && 'yes' || '' }}
@@ -49,7 +49,7 @@ jobs:
           ref: ${{ inputs.ref }}
 
       - name: Verify built package
-        uses: apify/actions/python-package-check@v1.6.2
+        uses: apify/actions/python-package-check@v1.9.0
         with:
           package_name: apify_haystack
           dist_dir: dist
